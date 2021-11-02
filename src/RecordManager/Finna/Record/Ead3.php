@@ -92,45 +92,50 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
         $data = parent::toSolrArray($db);
         $doc = $this->doc;
 
-        if ($unitDateRange = $this->getDaterange()) {
+        $first = true;
+        foreach ($this->getDateRanges() as $unitDateRange) {
             $startDateUnknown = $unitDateRange['startDateUnknown'];
             $unitDateRange = $unitDateRange['date'];
 
             $data['search_daterange_mv'][] = $data['unit_daterange']
                 = $this->metadataUtils->dateRangeToStr($unitDateRange);
 
-            $data['main_date_str'] = $data['era_facet']
-                = $this->metadataUtils->extractYear($unitDateRange[0]);
-            $data['main_date'] = $this->validateDate($unitDateRange[0]);
+            if ($first) {
+                $data['main_date_str'] = $data['era_facet']
+                    = $this->metadataUtils->extractYear($unitDateRange[0]);
+                $data['main_date'] = $this->validateDate($unitDateRange[0]);
 
-            if (!$startDateUnknown) {
-                // When startDate is known, Append year range to title
-                // (only years, not the full dates)
-                $startYear = $this->metadataUtils->extractYear($unitDateRange[0]);
-                $endYear = $this->metadataUtils->extractYear($unitDateRange[1]);
-                $yearRange = '';
-                if ($startYear != '-9999') {
-                    $yearRange = $startYear;
-                }
-                if ($endYear != $startYear) {
-                    $yearRange .= '-';
-                    if ($endYear != '9999') {
-                        $yearRange .= $endYear;
+                if (!$startDateUnknown) {
+                    // When startDate is known, Append year range to title
+                    // (only years, not the full dates)
+                    $startYear
+                        = $this->metadataUtils->extractYear($unitDateRange[0]);
+                    $endYear = $this->metadataUtils->extractYear($unitDateRange[1]);
+                    $yearRange = '';
+                    if ($startYear != '-9999') {
+                        $yearRange = $startYear;
                     }
-                }
-                if ($yearRange) {
-                    $len = strlen($yearRange);
-                    foreach (
-                        ['title_full', 'title_sort', 'title', 'title_short']
-                        as $field
-                    ) {
-                        if (substr($data[$field], -$len) != $yearRange
-                            && substr($data[$field], -$len - 2) != "($yearRange)"
+                    if ($endYear != $startYear) {
+                        $yearRange .= '-';
+                        if ($endYear != '9999') {
+                            $yearRange .= $endYear;
+                        }
+                    }
+                    if ($yearRange) {
+                        $len = strlen($yearRange);
+                        foreach (
+                            ['title_full', 'title_sort', 'title', 'title_short']
+                            as $field
                         ) {
-                            $data[$field] .= " ($yearRange)";
+                            if (substr($data[$field], -$len) != $yearRange
+                                && substr($data[$field], -$len - 2) != "($yearRange)"
+                            ) {
+                                $data[$field] .= " ($yearRange)";
+                            }
                         }
                     }
                 }
+                $first = false;
             }
         }
 
@@ -517,30 +522,33 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
     }
 
     /**
-     * Get date range.
+     * Get date ranges
      *
-     * @return NULL|array
+     * @return array
      */
-    protected function getDaterange()
+    protected function getDateRanges()
     {
-        if (isset($this->doc->did->unitdatestructured)) {
-            $date = $this->doc->did->unitdatestructured;
+        $result = [];
+        foreach ($this->doc->did->unitdatestructured ?? [] as $date) {
             if (isset($date->daterange)) {
                 $range = $this->doc->did->unitdatestructured->daterange;
                 if (isset($range->fromdate) && isset($range->todate)) {
-                    return $this->parseDateRange(
+                    $result[] = $this->parseDateRange(
                         (string)$range->fromdate . '/' . (string)$range->todate
                     );
                 }
             } elseif (isset($date->datesingle)) {
                 $year = (string)$date->datesingle;
-                return $this->parseDateRange("{$year}/{$year}");
+                $result[] = $this->parseDateRange("{$year}/{$year}");
             }
-        } elseif (isset($this->doc->did->unitdate)) {
-            foreach ($this->doc->did->unitdate as $unitdate) {
+        }
+        if (!$result) {
+            $primary = [];
+            foreach ($this->doc->did->unitdate ?? [] as $unitdate) {
                 $attributes = $unitdate->attributes();
                 if ($attributes->label
                     && (string)$attributes->label === 'Ajallinen kattavuus'
+                    && $unitdate->attributes()->normal
                 ) {
                     $date = $this->parseDateRange(
                         (string)$unitdate->attributes()->normal
@@ -548,23 +556,28 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                     if ($date
                         && !$date['startDateUnknown'] && !$date['endDateUnknown']
                     ) {
-                        return $date;
+                        $primary[] = $date;
+                        continue;
+                    }
+                }
+                $normal = (string)$unitdate->attributes()->normal;
+                if (!empty($normal)) {
+                    $result[] = $this->parseDateRange($normal);
+                } else {
+                    foreach (explode(', ', (string)$unitdate) as $single) {
+                        $date = str_replace('-', '/', $single);
+                        if (false === strpos($date, '/')) {
+                            $date = "${date}/${date}";
+                        }
+                        $result[] = $this->parseDateRange($date);
                     }
                 }
             }
-            $unitdate = $this->doc->did->unitdate;
-            $normal = (string)$unitdate->attributes()->normal;
-            if (!empty($normal)) {
-                return $this->parseDateRange($normal);
-            } else {
-                $date = str_replace('-', '/', (string)$unitdate);
-                if (false === strpos($date, '/')) {
-                    $date = "${date}/${date}";
-                }
-                return $this->parseDateRange($date);
+            if ($primary) {
+                $result = array_merge($primary, $result);
             }
         }
-        return null;
+        return $result;
     }
 
     /**
@@ -572,7 +585,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
      *
      * @param string $input Date range
      *
-     * @return NULL|array
+     * @return null|array
      */
     protected function parseDateRange($input)
     {
