@@ -577,7 +577,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                 $result = array_merge($primary, $result);
             }
         }
-        return $result;
+        return array_filter($result);
     }
 
     /**
