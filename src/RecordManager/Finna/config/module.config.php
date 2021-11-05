@@ -39,7 +39,7 @@ return [
                     \RecordManager\Finna\Record\Forward::class => \RecordManager\Base\Record\AbstractRecordFactory::class,
                     \RecordManager\Finna\Record\ForwardAuthority::class => \RecordManager\Base\Record\AbstractRecordFactory::class,
                     \RecordManager\Finna\Record\Lido::class => \RecordManager\Base\Record\AbstractRecordFactory::class,
-                    \RecordManager\Finna\Record\Lrmi::class => \RecordManager\Base\Record\AbstractRecordFactory::class,
+                    \RecordManager\Finna\Record\Lrmi::class => \RecordManager\Base\Record\AbstractRecordWithHttpClientManagerFactory::class,
                     \RecordManager\Finna\Record\Marc::class => \RecordManager\Finna\Record\MarcFactory::class,
                     \RecordManager\Finna\Record\MarcAuthority::class => \RecordManager\Base\Record\AbstractRecordFactory::class,
                     \RecordManager\Finna\Record\Qdc::class => \RecordManager\Base\Record\AbstractRecordWithHttpClientManagerFactory::class,
