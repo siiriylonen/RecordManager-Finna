@@ -206,7 +206,7 @@ class SolrUpdater
      *
      * @var bool
      */
-    protected $parallelMergedRecordUpdate;
+    protected $threadedMergedRecordUpdate;
 
     /**
      * Solr Update Buffer
@@ -633,10 +633,8 @@ class SolrUpdater
         $this->updateRetryWait = $config['Solr']['update_retry_wait'] ?? 60;
         $this->recordWorkers = $config['Solr']['record_workers'] ?? 0;
         $this->solrUpdateWorkers = $config['Solr']['solr_update_workers'] ?? 0;
-        $this->parallelMergedRecordUpdate
-            = $config['Solr']['parallel_merged_record_update']
-                ?? $config['Solr']['threaded_merged_record_update']
-                ?? false;
+        $this->threadedMergedRecordUpdate
+            = $config['Solr']['threaded_merged_record_update'] ?? false;
         $this->clusterStateCheckInterval
             = $config['Solr']['cluster_state_check_interval'] ?? 0;
         if (empty($config['Solr']['admin_url'])) {
@@ -719,7 +717,7 @@ class SolrUpdater
      */
     public function sigIntHandler($signal)
     {
-        echo '[' . getmypid() . "]: Termination requested\n";
+        echo getmypid() . " Termination requested\n";
         $this->terminate = true;
     }
 
@@ -850,31 +848,28 @@ class SolrUpdater
                 }
             }
 
-            if (!$this->parallelMergedRecordUpdate) {
+            if (!$this->threadedMergedRecordUpdate) {
                 // Create worker pools before merged records are processed to avoid
                 // sharing the database connection between processes
                 $this->initSingleRecordWorkerPools();
             }
 
             if ($processDedupRecords) {
-                if (!$delete && $this->parallelMergedRecordUpdate) {
+                if (!$delete && $this->threadedMergedRecordUpdate) {
+                    $this->log->logInfo(
+                        'updateRecords',
+                        'Running merged and individual record processing in'
+                        . ' parallel'
+                    );
                     $childPid = pcntl_fork();
                     if ($childPid == -1) {
                         throw new \Exception(
-                            'Could not fork merged record background update child'
-                        );
-                    }
-                    if ($childPid) {
-                        $this->log->logInfo(
-                            'updateRecords',
-                            "Started process $childPid for parallel processing of"
-                            . ' merged records'
+                            "Could not fork merged record background update child"
                         );
                     }
                 }
 
                 if (!$childPid) {
-                    // Not forked or this is the child process for merged records
                     $this->initWorkerPoolManager();
                     try {
                         $needCommit = $this->processMerged(
@@ -887,8 +882,10 @@ class SolrUpdater
                             $lastUpdateKey
                         );
                         if (null !== $childPid) {
-                            // This is a forked child process, deinit and exit
                             $this->deInitWorkerPoolManager();
+                        }
+
+                        if (null !== $childPid) {
                             exit($needCommit ? 1 : 0);
                         }
                     } catch (\Exception $e) {
@@ -899,14 +896,11 @@ class SolrUpdater
                                 . $e->getLine()
                         );
                         if (null === $childPid) {
-                            // Not forked, throw an exception
                             throw $e;
                         }
-                        $this->deInitWorkerPoolManager();
-                        $this->log->logError(
-                            'updateRecords',
-                            'Merged record process exiting with status 2'
-                        );
+                        if (null !== $childPid) {
+                            $this->deInitWorkerPoolManager();
+                        }
                         exit(2);
                     }
                 }
@@ -916,7 +910,7 @@ class SolrUpdater
                 return;
             }
 
-            if ($this->parallelMergedRecordUpdate) {
+            if ($this->threadedMergedRecordUpdate) {
                 // Create worker pools only after merged record forked process has
                 // been started to avoid sharing the worker pool manager
                 $this->initSingleRecordWorkerPools();
@@ -972,7 +966,7 @@ class SolrUpdater
                 $params,
                 [],
                 function ($record) use (
-                    &$childPid,
+                    $childPid,
                     $pc,
                     &$mergedComponents,
                     &$count,
@@ -1015,11 +1009,11 @@ class SolrUpdater
                         );
                     }
 
-                    // Check status of the child process for merged record:
+                    // Check child status
                     if ($childPid) {
                         $pid = pcntl_waitpid($childPid, $status, WNOHANG);
                         if (0 !== $pid) {
-                            $exitCode = $pid > 0 ? pcntl_wexitstatus($status) : 2;
+                            $exitCode = $pid > 0 ? pcntl_wexitstatus($status) : null;
                             $childPid = null;
                             if ($exitCode == 1) {
                                 $needCommit = true;
@@ -1039,7 +1033,17 @@ class SolrUpdater
 
             if (isset($this->terminate)) {
                 if ($childPid) {
-                    $this->waitForChildProcessExit('updateRecords', $childPid, 600);
+                    $this->log->logInfo(
+                        'updateRecords',
+                        'Waiting for child process to terminate...'
+                    );
+                    while (1) {
+                        $pid = pcntl_waitpid($childPid, $status, WNOHANG);
+                        if ($pid !== 0) {
+                            break;
+                        }
+                        sleep(1);
+                    }
                 }
                 $this->log->logInfo(
                     'updateRecords',
@@ -1107,11 +1111,27 @@ class SolrUpdater
                         }
                         break;
                     } elseif ($pid < 0) {
-                        $this->log->logError(
-                            'updateRecords',
-                            'Could not get merged record handler results'
-                        );
-                        $needCommit = true;
+                        $exitCode = $this->workerPoolManager
+                            ->getExternalProcessExitCode($childPid);
+                        if (null !== $exitCode) {
+                            if (1 === $exitCode) {
+                                $needCommit = true;
+                            } elseif ($exitCode) {
+                                $this->log->logError(
+                                    'updateRecords',
+                                    'Merged record update process failed, aborting'
+                                );
+                                throw new \Exception(
+                                    'Merged record update process failed'
+                                );
+                            }
+                        } else {
+                            $this->log->logError(
+                                'updateRecords',
+                                'Could not get merged record handler results'
+                            );
+                            $needCommit = true;
+                        }
                         break;
                     }
                     sleep(1);
@@ -1138,17 +1158,19 @@ class SolrUpdater
                     . $e->getLine()
             );
             if ($childPid) {
-                $this->log->logInfo(
-                    'updateRecords',
-                    "Terminating child process $childPid"
-                );
                 // Kill the child process too
                 posix_kill($childPid, SIGINT);
-                // Wait for child to finish (times out in 10 minutes)
-                $this->waitForChildProcessExit('updateRecords', $childPid, 60);
+                // Wait for child to finish
+                while (1) {
+                    $pid = pcntl_waitpid($childPid, $status, WNOHANG);
+                    if (0 != $pid) {
+                        break;
+                    }
+                    usleep(1000);
+                }
             }
 
-            if ($this->parallelMergedRecordUpdate && !$childPid) {
+            if ($this->threadedMergedRecordUpdate && !$childPid) {
                 exit(2);
             } else {
                 $this->deInitWorkerPoolManager();
@@ -1159,47 +1181,6 @@ class SolrUpdater
             pcntl_signal(SIGINT, SIG_DFL);
             pcntl_signal(SIGTERM, SIG_DFL);
         }
-    }
-
-    /**
-     * Wait for the given child process to terminate
-     *
-     * @param string $methodName Waiting method name for logging purposes
-     * @param int    $childPid   Child process id
-     * @param int    $timeout    Wait timeout in seconds
-     *
-     * @return bool Whether the process terminated properly
-     */
-    protected function waitForChildProcessExit(
-        string $methodName,
-        int $childPid,
-        int $timeout
-    ): bool {
-        $this->log->logInfo(
-            $methodName,
-            "Waiting $timeout seconds for child process $childPid to terminate..."
-        );
-        $startTime = time();
-        $pid = 0;
-        while (time() - $startTime < $timeout) {
-            $pid = pcntl_waitpid($childPid, $status, WNOHANG);
-            if ($pid !== 0) {
-                break;
-            }
-            sleep(1);
-        }
-        if ($pid === 0) {
-            $this->log->logInfo(
-                $methodName,
-                "Timed out waiting for child process $childPid to terminate"
-            );
-            return false;
-        }
-        $this->log->logInfo(
-            $methodName,
-            "Child process $childPid terminated"
-        );
-        return true;
     }
 
     /**
@@ -3018,7 +2999,10 @@ class SolrUpdater
                     FILE_APPEND | LOCK_EX
                 );
             } else {
-                $this->workerPoolManager->addRequest('solr', $request);
+                $this->workerPoolManager->addRequest(
+                    'solr',
+                    $request
+                );
             }
             $this->buffer = '';
             $this->bufferLen = 0;
@@ -3058,7 +3042,10 @@ class SolrUpdater
             if (null !== $this->workerPoolManager
                 && $this->workerPoolManager->hasWorkerPool('solr')
             ) {
-                $this->workerPoolManager->addRequest('solr', $request);
+                $this->workerPoolManager->addRequest(
+                    'solr',
+                    $request
+                );
             } else {
                 $this->solrRequest($request);
             }

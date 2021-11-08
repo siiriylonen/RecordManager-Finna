@@ -93,13 +93,6 @@ class WorkerPoolManager
     protected $externalProcessExitCodes = [];
 
     /**
-     * Termination flag for child processes
-     *
-     * @var bool
-     */
-    protected $terminate = false;
-
-    /**
      * Constructor
      */
     public function __construct()
@@ -202,11 +195,6 @@ class WorkerPoolManager
                     'active' => false
                 ];
             } else {
-                // Handle signals:
-                pcntl_signal(SIGINT, SIG_DFL);
-                pcntl_signal(SIGTERM, SIG_DFL);
-                pcntl_signal(SIGINT, [$this, 'childSignalHandler']);
-                pcntl_signal(SIGTERM, [$this, 'childSignalHandler']);
                 if (is_callable('cli_set_process_title')) {
                     // This doesn't work with macOS, so suppress warnings.
                     @cli_set_process_title(
@@ -220,33 +208,21 @@ class WorkerPoolManager
                     }
                     while ($request = $this->readSocket($childSocket, true, true)) {
                         $result = call_user_func_array($runMethod, $request);
-                        $writeOk = $this->writeSocket(
-                            $childSocket,
-                            ['r' => $result],
-                            true
-                        );
-                        if (!$writeOk) {
-                            exit(255);
-                        }
+                        $this->writeSocket($childSocket, ['r' => $result], true);
                     }
-                    exit(0);
                 } catch (\Exception $e) {
                     echo 'Fatal: Worker ' . getmypid()
                         . " exception in pool $poolId: " . $e->getMessage()
                         . "\nStack trace: " . $e->getTraceAsString();
-                    try {
-                        $this->writeSocket(
-                            $childSocket,
-                            [
-                                'exception' => $e->getMessage() . "\nStack trace: "
-                                . $e->getTraceAsString()
-                            ],
-                            true
-                        );
-                        socket_close($childSocket);
-                    } catch (\Exception $e) {
-                        // Fall through
-                    }
+                    $this->writeSocket(
+                        $childSocket,
+                        [
+                            'exception' => $e->getMessage() . "\nStack trace: "
+                            . $e->getTraceAsString()
+                        ],
+                        true
+                    );
+                    socket_close($childSocket);
                     exit(255);
                 }
             }
@@ -310,7 +286,6 @@ class WorkerPoolManager
             return;
         }
         while ($this->requestQueue[$poolId]) {
-            $this->checkForStoppedWorkers();
             $queueItem = array_shift($this->requestQueue[$poolId]);
             $handled = false;
             foreach ($this->workerPools[$poolId] as &$worker) {
@@ -327,6 +302,7 @@ class WorkerPoolManager
             }
         }
         $this->checkForResults($poolId);
+        $this->checkForStoppedWorkers();
     }
 
     /**
@@ -436,9 +412,6 @@ class WorkerPoolManager
         $received = 0;
         $interrupted = 0;
         do {
-            if ($this->terminate) {
-                return null;
-            }
             if ($checkParent) {
                 $this->checkParentIsAlive();
             }
@@ -477,10 +450,6 @@ class WorkerPoolManager
                     'socket_recv failed: ' . socket_strerror(socket_last_error())
                 );
             }
-            if (!$block && 0 === $received && 0 === $result) {
-                return null;
-            }
-
             $msgLen .= $buffer;
             $received += $result;
         } while ($received < 8);
@@ -489,9 +458,6 @@ class WorkerPoolManager
         $message = '';
         $received = 0;
         while ($received < $messageLength) {
-            if ($this->terminate) {
-                return null;
-            }
             if ($checkParent) {
                 $this->checkParentIsAlive();
             }
@@ -542,9 +508,6 @@ class WorkerPoolManager
         $written = 0;
         $startTime = microtime(true);
         while (true) {
-            if ($this->terminate) {
-                return false;
-            }
             if ($checkParent) {
                 $this->checkParentIsAlive();
             }
@@ -609,19 +572,6 @@ class WorkerPoolManager
     }
 
     /**
-     * Child process signal handler
-     *
-     * @param int $signo Signal number
-     *
-     * @return void
-     */
-    public function childSignalHandler($signo)
-    {
-        $this->terminate = true;
-        echo getmypid() . " CHILD SIG\n";
-    }
-
-    /**
      * Child process reaper
      *
      * @return void
@@ -637,7 +587,6 @@ class WorkerPoolManager
                 foreach ($workers as &$worker) {
                     if ($pid === $worker['pid']) {
                         $worker['exitCode'] = $exitCode;
-                        $worker['active'] = false;
                         $found = true;
                         break;
                     }
