@@ -159,9 +159,15 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                 }
             }
         }
-        $data['free_online_boolean']
-            = isset($data['online_boolean'])
-            && !isset($this->doc->accessrestrict);
+        if (!empty($data['online_boolean'])) {
+            $data['free_online_boolean']
+                = $this->getUsageRights() !== ['restricted'];
+            if ($data['free_online_boolean']) {
+                // This is sort of special. Make sure to use source instead
+                // of datasource.
+                $data['free_online_str_mv'] = $data['source_str_mv'];
+            }
+        }
 
         if ($identifier = $this->getUnitId()) {
             $p = strpos($identifier, '/');
@@ -476,21 +482,23 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
      */
     protected function getUsageRights()
     {
-        if (isset($this->doc->userestrict->p)) {
-            foreach ($this->doc->userestrict->p as $restrict) {
-                if (strstr((string)$restrict, 'No known copyright restrictions')) {
-                    return [];
-                }
+        $all = array_merge(
+            (array)($this->doc->userestrict->p ?? []),
+            (array)($this->doc->accessrestrict->p ?? [])
+        );
+        foreach ($all as $restrict) {
+            $restrict = (string)$restrict;
+            if (strstr($restrict, 'No known copyright restrictions')) {
+                return ['No known copyright restrictions'];
+            }
+            if (strncasecmp($restrict, 'CC', 2) === 0
+                || strncasecmp($restrict, 'Public', 6) === 0
+                || strncasecmp($restrict, 'Julkinen', 8) === 0
+            ) {
+                return (string)$restrict;
             }
         }
 
-        if (isset($this->doc->accessrestrict->p)) {
-            foreach ($this->doc->accessrestrict->p as $restrict) {
-                if (strstr((string)$restrict, 'No known copyright restrictions')) {
-                    return [];
-                }
-            }
-        }
         return ['restricted'];
     }
 
