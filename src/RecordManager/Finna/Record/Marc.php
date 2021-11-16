@@ -772,6 +772,17 @@ class Marc extends \RecordManager\Base\Record\Marc
                     $data['format_ext_str_mv'] = [['VideoGame', $platform]];
                 }
             }
+        } elseif ('Dissertation' === $data['format']) {
+            if ('m' === substr($this->getField('000'), 7, 1)) {
+                $data['format_ext_str_mv'] = (array)$data['format'];
+                if ('o' === substr($this->getField('008'), 23, 1)
+                    || 'cr' === substr($this->getField('007'), 0, 2)
+                ) {
+                    $data['format_ext_str_mv'][] = 'eBook';
+                } else {
+                    $data['format_ext_str_mv'][] = 'Book';
+                }
+            }
         } else {
             $data['format_ext_str_mv'] = $data['format'];
         }
