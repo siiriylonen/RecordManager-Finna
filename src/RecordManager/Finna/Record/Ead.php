@@ -187,11 +187,7 @@ class Ead extends \RecordManager\Base\Record\Ead
      */
     protected function getUsageRights()
     {
-        $all = array_merge(
-            (array)($this->doc->userestrict->p ?? []),
-            (array)($this->doc->accessrestrict->p ?? [])
-        );
-        foreach ($all as $restrict) {
+        $getRestriction = function ($restrict) {
             $restrict = (string)$restrict;
             if (strstr($restrict, 'No known copyright restrictions')) {
                 return ['No known copyright restrictions'];
@@ -200,7 +196,21 @@ class Ead extends \RecordManager\Base\Record\Ead
                 || strncasecmp($restrict, 'Public', 6) === 0
                 || strncasecmp($restrict, 'Julkinen', 8) === 0
             ) {
-                return (string)$restrict;
+                return [(string)$restrict];
+            }
+            return null;
+        };
+
+        // Handle each element separately. Any merging as an array is bound to cause
+        // problems with element attributes.
+        foreach ($this->doc->userestrict->p ?? [] as $restrict) {
+            if ($result = $getRestriction($restrict)) {
+                return $result;
+            }
+        }
+        foreach ($this->doc->accessrestrict->p ?? [] as $restrict) {
+            if ($result = $getRestriction($restrict)) {
+                return $result;
             }
         }
 
