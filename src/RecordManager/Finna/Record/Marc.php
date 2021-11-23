@@ -652,6 +652,10 @@ class Marc extends \RecordManager\Base\Record\Marc
         // Hierarchical categories (e.g. SFX)
         if ($this->getDriverParam('categoriesIn650', false)) {
             foreach ($this->getFields('650') as $field650) {
+                if ($this->getSubfield($field650, '0')) {
+                    // Source specified -- assume not a category
+                    continue;
+                }
                 $category = $this->getSubfield($field650, 'a');
                 $category = trim(str_replace(['/', '\\'], '', $category));
                 if (!$category) {
