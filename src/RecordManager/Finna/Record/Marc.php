@@ -636,8 +636,12 @@ class Marc extends \RecordManager\Base\Record\Marc
                 }
             }
             if (in_array($type, ['kategoria', 'kategori'])) {
-                $category = $this->getSubfield($field886, 'c');
-                $sub = $this->getSubfield($field886, 'd');
+                $category = $this->metadataUtils->stripTrailingPunctuation(
+                    $this->getSubfield($field886, 'c')
+                );
+                $sub = $this->metadataUtils->stripTrailingPunctuation(
+                    $this->getSubfield($field886, 'd')
+                );
                 if ($sub) {
                     $category .= "/$sub";
                 }
@@ -653,9 +657,12 @@ class Marc extends \RecordManager\Base\Record\Marc
                 if (!$category) {
                     continue;
                 }
+                $category
+                    = $this->metadataUtils->stripTrailingPunctuation($category);
                 $sub = $this->getSubfield($field650, 'x');
                 $sub = trim(str_replace(['/', '\\'], '', $sub));
                 if ($sub) {
+                    $sub = $this->metadataUtils->stripTrailingPunctuation($sub);
                     $category .= "/$sub";
                 }
                 $data['category_str_mv'][] = $category;
