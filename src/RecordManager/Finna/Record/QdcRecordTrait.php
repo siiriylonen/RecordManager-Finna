@@ -83,7 +83,8 @@ trait QdcRecordTrait
             ];
             $data['online_boolean'] = true;
             $data['online_str_mv'] = $this->source;
-            // Mark everything free until we know better
+            // Mark everything free until we know better. This may get overridden
+            // below.
             $data['free_online_boolean'] = true;
             $data['free_online_str_mv'] = $this->source;
             $data['online_urls_str_mv'][] = json_encode($link);
@@ -100,14 +101,33 @@ trait QdcRecordTrait
             ];
             $data['online_boolean'] = true;
             $data['online_str_mv'] = $this->source;
+            // Mark everything free until we know better. This may get overridden
+            // below.
             $data['free_online_boolean'] = true;
-            // Mark everything free until we know better
             $data['free_online_str_mv'] = $this->source;
             $data['online_urls_str_mv'][] = json_encode($link);
             if (strcasecmp($file->attributes()->bundle, 'THUMBNAIL') == 0
                 && !isset($data['thumbnail'])
             ) {
                 $data['thumbnail'] = $url;
+            }
+        }
+
+        // Check rights for openAccess or closedAccess, that will override any
+        // existing values:
+        foreach ($this->doc->rights as $rights) {
+            if ((string)$rights === 'openAccess') {
+                if (empty($data['free_online_boolean'])) {
+                    $data['free_online_boolean'] = true;
+                    $data['free_online_str_mv'] = $this->source;
+                }
+                break;
+            } elseif ((string)$rights === 'closedAccess') {
+                if (!empty($data['free_online_boolean'])) {
+                    unset($data['free_online_boolean']);
+                    unset($data['free_online_str_mv']);
+                }
+                break;
             }
         }
 
