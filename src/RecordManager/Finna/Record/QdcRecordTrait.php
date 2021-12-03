@@ -42,6 +42,26 @@ use RecordManager\Base\Database\DatabaseInterface as Database;
 trait QdcRecordTrait
 {
     /**
+     * Rights statements indicating open access
+     *
+     * @var array
+     */
+    protected $openAccessRights = [
+        'openAccess',
+        'info:eu-repo/semantics/openAccess',
+    ];
+
+    /**
+     * Rights statements indicating restricted access
+     *
+     * @var array
+     */
+    protected $restrictedAccessRights = [
+        'closedAccess',
+        'info:eu-repo/semantics/restrictedAccess',
+    ];
+
+    /**
      * Return fields to be indexed in Solr
      *
      * @param Database $db Database connection. Omit to avoid database lookups for
@@ -113,16 +133,17 @@ trait QdcRecordTrait
             }
         }
 
-        // Check rights for openAccess or closedAccess, that will override any
-        // existing values:
+        // Check rights for open access or restricted access indicators that will
+        // override any existing values:
         foreach ($this->doc->rights as $rights) {
-            if ((string)$rights === 'openAccess') {
+            if (in_array(trim((string)$rights), $this->openAccessRights)) {
                 if (empty($data['free_online_boolean'])) {
                     $data['free_online_boolean'] = true;
                     $data['free_online_str_mv'] = $this->source;
                 }
                 break;
-            } elseif ((string)$rights === 'closedAccess') {
+            } elseif (in_array(trim((string)$rights), $this->restrictedAccessRights)
+            ) {
                 if (!empty($data['free_online_boolean'])) {
                     unset($data['free_online_boolean']);
                     unset($data['free_online_str_mv']);
