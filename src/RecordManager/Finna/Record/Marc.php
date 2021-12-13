@@ -1558,8 +1558,11 @@ class Marc extends \RecordManager\Base\Record\Marc
             if ($url) {
                 $rights[] = $url;
             }
+            if (!$url && !$subC) {
+                $rights[] = 'restricted';
+            }
         }
-        return $rights ?: ['restricted'];
+        return $rights;
     }
 
     /**
