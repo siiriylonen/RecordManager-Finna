@@ -806,6 +806,7 @@ class Marc extends \RecordManager\Base\Record\Marc
 
         // Additional authority ids
         $data['topic_id_str_mv'] = $this->getTopicIds();
+        $data['geographic_id_str_mv'] = $this->getGeographicTopicIds();
 
         // Make sure center_coords is single-valued
         if (!empty($data['center_coords'])) {
@@ -1925,6 +1926,20 @@ class Marc extends \RecordManager\Base\Record\Marc
             $this->getFieldsSubfields([[self::GET_NORMAL, '370', ['g' => 1]]])
         );
         return $result;
+    }
+
+    /**
+     * Get all geographic topic identifiers
+     *
+     * @return array
+     */
+    protected function getGeographicTopicIds()
+    {
+        return $this->getFieldsSubfields(
+            [
+                [self::GET_NORMAL, '651', ['0' => 1]]
+            ]
+        );
     }
 
     /**
