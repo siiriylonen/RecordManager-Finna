@@ -80,8 +80,7 @@ trait AuthoritySupportTrait
                 $result[] = $id;
                 continue;
             }
-            $id = addcslashes($id, '\\.');
-            $result[] = $ns ? "$ns.$id" : $id;
+            $result[] = $ns ? ("$ns." . addcslashes($id, '\\.')) : $id;
         }
         return $result;
     }

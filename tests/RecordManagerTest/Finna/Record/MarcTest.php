@@ -472,8 +472,8 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             'format_ext_str_mv' => 'Book',
             'topic_id_str_mv' => [
                 'http://www.yso.fi/onto/yso/p14664',
-                '(test)test\\\\\\.12',
-                '(biotest)BIOTEST\\.12',
+                '(test)test\\.12',
+                '(biotest)BIOTEST.12',
                 '(biotest)(BIOTEST)1234',
             ],
             'description' => '',
