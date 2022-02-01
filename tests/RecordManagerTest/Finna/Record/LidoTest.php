@@ -50,7 +50,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testMusketti1()
     {
-        $fields = $this->createRecord(Lido::class, 'musketti1.xml', [], 'finna')
+        $fields = $this->createRecord(Lido::class, 'musketti1.xml', [], 'Finna')
             ->toSolrArray();
 
         $this->assertContains('metalli', $fields['material']);
@@ -122,7 +122,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testMusketti2()
     {
-        $fields = $this->createRecord(Lido::class, 'musketti2.xml', [], 'finna')
+        $fields = $this->createRecord(Lido::class, 'musketti2.xml', [], 'Finna')
             ->toSolrArray();
         unset($fields['fullrecord']);
 
@@ -273,7 +273,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testLusto1()
     {
-        $fields = $this->createRecord(Lido::class, 'lusto1.xml', [], 'finna')
+        $fields = $this->createRecord(Lido::class, 'lusto1.xml', [], 'Finna')
             ->toSolrArray();
 
         $this->assertEquals('E01025:3', $fields['identifier']);
@@ -306,7 +306,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testVtm1()
     {
-        $fields = $this->createRecord(Lido::class, 'vtm1.xml', [], 'finna')
+        $fields = $this->createRecord(Lido::class, 'vtm1.xml', [], 'Finna')
             ->toSolrArray();
 
         $this->assertContains('kangas', $fields['material']);
@@ -346,7 +346,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testTuusula1()
     {
-        $fields = $this->createRecord(Lido::class, 'tuusula1.xml', [], 'finna')
+        $fields = $this->createRecord(Lido::class, 'tuusula1.xml', [], 'Finna')
             ->toSolrArray();
 
         $this->assertContains('kangas', $fields['material']);
@@ -418,7 +418,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testDesign1()
     {
-        $fields = $this->createRecord(Lido::class, 'design1.xml', [], 'finna')
+        $fields = $this->createRecord(Lido::class, 'design1.xml', [], 'Finna')
             ->toSolrArray();
 
         $this->assertEquals('Kuva', $fields['format']);
@@ -443,7 +443,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testWorkIdentificationKeys()
     {
-        $record = $this->createRecord(Lido::class, 'lido_workkeys.xml', [], 'finna');
+        $record = $this->createRecord(Lido::class, 'lido_workkeys.xml', [], 'Finna');
 
         $expected = [
             [
