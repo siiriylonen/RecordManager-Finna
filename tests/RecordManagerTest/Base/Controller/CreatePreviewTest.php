@@ -30,15 +30,9 @@ namespace RecordManagerTest\Base\Controller;
 use RecordManager\Base\Controller\CreatePreview;
 use RecordManager\Base\Database\PDODatabase;
 use RecordManager\Base\Deduplication\DedupHandler;
-use RecordManager\Base\Enrichment\PluginManager as EnrichmentPluginManager;
-use RecordManager\Base\Http\ClientManager as HttpClientManager;
 use RecordManager\Base\Record\PluginManager as RecordPluginManager;
-use RecordManager\Base\Settings\Ini;
-use RecordManager\Base\Solr\PreviewCreator;
 use RecordManager\Base\Splitter\PluginManager as SplitterPluginManager;
-use RecordManager\Base\Utils\FieldMapper;
 use RecordManager\Base\Utils\Logger;
-use RecordManager\Base\Utils\WorkerPoolManager;
 use RecordManagerTest\Base\Feature\FixtureTrait;
 use RecordManagerTest\Base\Feature\PreviewCreatorTrait;
 
@@ -105,10 +99,10 @@ class CreatePreviewTest extends \PHPUnit\Framework\TestCase
             $logger
         );
         $marc = new \RecordManager\Base\Record\Marc(
-          [],
-          $this->dataSourceConfig,
-          $logger,
-          $metadataUtils
+            [],
+            $this->dataSourceConfig,
+            $logger,
+            $metadataUtils
         );
         $recordPM = $this->createMock(RecordPluginManager::class);
         $recordPM->expects($this->once())
