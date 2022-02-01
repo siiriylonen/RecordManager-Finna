@@ -180,6 +180,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             ],
             'genre' => [],
             'geographic' => [],
+            'geographic_id_str_mv' => [],
             'era' => [],
             'topic_facet' => [
                 'oppaat',
@@ -417,6 +418,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             ],
             'geographic' => [
             ],
+            'geographic_id_str_mv' => [],
             'era' => [
             ],
             'topic_facet' => [
@@ -611,6 +613,11 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
                 'Uudenmaan lääni',
                 'Ahvenanmaa',
             ],
+            'geographic_id_str_mv' => [
+                'http://www.yso.fi/onto/yso/p94448',
+                'http://www.yso.fi/onto/yso/p94460',
+                'http://www.yso.fi/onto/yso/p94081',
+            ],
             'era' => [
             ],
             'topic_facet' => [
@@ -777,6 +784,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             ],
             'genre' => [],
             'geographic' => [],
+            'geographic_id_str_mv' => [],
             'era' => [],
             'topic_facet' => [
                 'testaus',
@@ -915,6 +923,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             ],
             'genre' => [],
             'geographic' => [],
+            'geographic_id_str_mv' => [],
             'era' => [],
             'topic_facet' => [
                 'testaus',
