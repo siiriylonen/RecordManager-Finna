@@ -136,11 +136,13 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             'title' => 'Tutki ja kirjoita',
             'title_sub' => '',
             'title_short' => 'Tutki ja kirjoita',
-            'title_full' => 'Tutki ja kirjoita / Sirkka Hirsjärvi, Pirkko Remes, Paula Sajavaara',
+            'title_full' => 'Tutki ja kirjoita / Sirkka Hirsjärvi, Pirkko Remes,'
+                . ' Paula Sajavaara',
             'title_alt' => [],
             'title_old' => [],
             'title_new' => [],
-            'title_sort' => 'tutki ja kirjoita / sirkka hirsjärvi, pirkko remes, paula sajavaara',
+            'title_sort' => 'tutki ja kirjoita / sirkka hirsjärvi, pirkko remes,'
+                . ' paula sajavaara',
             'series' => [],
             'publisher' => [
                 'Tammi',
@@ -282,7 +284,8 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
         $this->compareArray($expected, $keys, 'getWorkIdentificationData');
 
         $this->assertEquals(
-            ['(FOO)2345', '(FI-MELINDA)005246184'], $record->getUniqueIDs()
+            ['(FOO)2345', '(FI-MELINDA)005246184'],
+            $record->getUniqueIDs()
         );
     }
 
@@ -467,9 +470,9 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             'format_ext_str_mv' => 'Book',
             'topic_id_str_mv' => [
                 'http://www.yso.fi/onto/yso/p14664',
-                'test\\\\\\.12',
-                'BIOTEST\\.12',
-                '(BIOTEST)1234',
+                '(test)test\\\\\\.12',
+                '(biotest)BIOTEST\\.12',
+                '(biotest)(BIOTEST)1234',
             ],
             'description' => '',
         ];
@@ -524,7 +527,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
                 'kartat',
                 'Suomi',
                 'Turun ja Porin lääni',
-                'ysa',
+                'yso/fin',
                 'Uudenmaan lääni',
                 'Ahvenanmaa',
             ],
