@@ -557,8 +557,10 @@ class Lido extends \RecordManager\Base\Record\Lido
         };
 
         foreach ($this->getEventNodes($this->usagePlaceEvent) as $eventNode) {
-            if (isset($eventNode->eventPlace->place->placeID)) {
-                $result[] = $getPlaceID($eventNode->eventPlace->place->placeID);
+            foreach ($eventNode->eventPlace as $eventPlace) {
+                if (isset($eventPlace->place->placeID)) {
+                    $result[] = $getPlaceID($eventPlace->place->placeID);
+                }
             }
         }
 
