@@ -308,8 +308,16 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTest
             ],
             'author_sort' => false,
             'author_corporate' => [],
-            'geographic_facet' => [],
-            'geographic' => [],
+            'geographic_facet' => [
+                'Luvia',
+                'Luvia',
+                'Luvia',
+            ],
+            'geographic' => [
+                'Luvia',
+                'Luvia',
+                'Luvia',
+            ],
             'topic_facet' => [
                 'folk tales',
                 'kansansadut',
@@ -417,7 +425,11 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTest
                 'http://www.yso.fi/onto/koko/p74073',
                 'http://www.yso.fi/onto/koko/p74073',
             ],
-            'geographic_id_str_mv' => [],
+            'geographic_id_str_mv' => [
+                'http://www.yso.fi/onto/yso/p105341',
+                'http://www.yso.fi/onto/yso/p105341',
+                'http://www.yso.fi/onto/yso/p105341',
+            ],
         ];
 
         $this->assertEquals(
