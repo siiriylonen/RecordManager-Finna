@@ -160,8 +160,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
             }
         }
         if (!empty($data['online_boolean'])) {
-            $data['free_online_boolean']
-                = $this->getUsageRights() !== ['restricted'];
+            $data['free_online_boolean'] = $this->isFreeOnline();
             if ($data['free_online_boolean']) {
                 // This is sort of special. Make sure to use source instead
                 // of datasource.
@@ -526,6 +525,21 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
     }
 
     /**
+     * Check if the record is freely available
+     *
+     * @return bool
+     */
+    protected function isFreeOnline()
+    {
+        foreach ($this->doc->accessrestrict->p ?? [] as $restrict) {
+            if (trim((string)$restrict) !== '') {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Return subtitle
      *
      * @return string
@@ -566,7 +580,9 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                 if (isset($range->fromdate) && isset($range->todate)) {
                     // Some data sources have multiple ranges in one daterange
                     // (non-standard presentation), try to handle the case sensibly:
-                    $toDate = (string)end($range->todate);
+                    foreach ($range->todate as $to) {
+                        $toDate = (string)$to;
+                    }
                     $result[] = $this->parseDateRange(
                         (string)$range->fromdate . '/' . $toDate
                     );
