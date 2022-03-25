@@ -48,17 +48,29 @@ class Lido extends \RecordManager\Base\Record\Lido
     /**
      * Main event name reflecting the terminology in the particular LIDO records.
      *
-     * @var string
+     * Key is event type, value is priority (smaller more important).
+     *
+     * @var array
      */
-    protected $mainEvent = 'valmistus';
+    protected $mainEvents = [
+        'suunnittelu' => 0,
+        'design' => 0,
+        'valmistus' => 1,
+        'creation' => 1,
+    ];
 
     /**
      * Usage place event name reflecting the terminology in the particular LIDO
      * records.
      *
-     * @var string
+     * Key is event type, value is priority (smaller more important).
+     *
+     * @var array
      */
-    protected $usagePlaceEvent = 'käyttö';
+    protected $usagePlaceEvents = [
+        'käyttö' => 0,
+        'use' => 0,
+    ];
 
     /**
      * Related work relation types reflecting the terminology in the particular LIDO
@@ -105,6 +117,18 @@ class Lido extends \RecordManager\Base\Record\Lido
 
         $data['identifier'] = $this->getIdentifier();
 
+        // Authors with roles:
+        $data['author'] = $this->getActors($this->mainEvents, null, true);
+        if (!empty($data['author'])) {
+            $data['author_sort'] = $data['author'][0];
+        }
+        if ($this->secondaryAuthorEvents) {
+            $data['author2']
+                = $this->getActors($this->secondaryAuthorEvents, null, true);
+        }
+        // Author facets without roles:
+        $data['author_facet'] = $this->getActors($this->mainEvents, null, false);
+
         // Back-compatibility:
         $data['material'] = $data['material_str_mv'];
 
@@ -146,15 +170,11 @@ class Lido extends \RecordManager\Base\Record\Lido
         $data['topic'] = $data['topic_facet'] = $topic;
         // END OF TUUSULA FIX
 
-        $data['artist_str_mv'] = $this->getActors('valmistus', 'taiteilija', false);
-        $data['photographer_str_mv']
-            = $this->getActors('valmistus', 'valokuvaaja', false);
-        $data['finder_str_mv']
-            = $this->getActors('löytyminen', 'löytäjä', false);
-        $data['manufacturer_str_mv']
-            = $this->getActors('valmistus', 'valmistaja', false);
-        $data['designer_str_mv']
-            = $this->getActors('suunnittelu', 'suunnittelija', false);
+        $data['artist_str_mv'] = $this->getActors('valmistus', 'taiteilija');
+        $data['photographer_str_mv'] = $this->getActors('valmistus', 'valokuvaaja');
+        $data['finder_str_mv'] = $this->getActors('löytyminen', 'löytäjä');
+        $data['manufacturer_str_mv'] = $this->getActors('valmistus', 'valmistaja');
+        $data['designer_str_mv'] = $this->getActors('suunnittelu', 'suunnittelija');
 
         // Keep classification_str_mv for backward-compatibility for now
         $data['classification_txt_mv'] = $data['classification_str_mv']
@@ -232,8 +252,6 @@ class Lido extends \RecordManager\Base\Record\Lido
         if ($rights = $this->getUsageRights()) {
             $data['usage_rights_str_mv'] = $rights;
         }
-
-        $data['author_facet'] = $this->getActors($this->mainEvent, null, false);
 
         $data['format_ext_str_mv'] = $this->getObjectWorkTypes();
 
@@ -326,7 +344,7 @@ class Lido extends \RecordManager\Base\Record\Lido
 
         // Event places
         $locations = [];
-        foreach ([$this->mainEvent, $this->usagePlaceEvent] as $event) {
+        foreach ([$this->mainEvents, $this->usagePlaceEvents] as $event) {
             foreach ($this->getEventNodes($event) as $eventNode) {
                 // If there is already gml in the record, don't return anything for
                 // geocoding
@@ -417,7 +435,7 @@ class Lido extends \RecordManager\Base\Record\Lido
      */
     public function getMainAuthor()
     {
-        $authors = $this->getActors($this->mainEvent, null, false);
+        $authors = $this->getActors($this->mainEvents, null, false);
         return $authors ? $authors[0] : '';
     }
 
@@ -556,7 +574,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             return $id;
         };
 
-        foreach ($this->getEventNodes($this->usagePlaceEvent) as $eventNode) {
+        foreach ($this->getEventNodes($this->usagePlaceEvents) as $eventNode) {
             foreach ($eventNode->eventPlace as $eventPlace) {
                 if (isset($eventPlace->place->placeID)) {
                     $result[] = $getPlaceID($eventPlace->place->placeID);
@@ -581,7 +599,7 @@ class Lido extends \RecordManager\Base\Record\Lido
      * object. Either the individual materials are retrieved, or the display
      * materials element is retrieved in case of failure.
      *
-     * @param string $eventType Which event to use
+     * @param string|array $eventType Event type(s) allowed
      *
      * @link   http://www.lido-schema.org/schema/v1.0/lido-v1.0-schema-listing.html
      * #materialsTechSetComplexType
@@ -706,7 +724,7 @@ class Lido extends \RecordManager\Base\Record\Lido
     /**
      * Return the date range associated with specified event
      *
-     * @param string $event Which event to use (omit to scan all events)
+     * @param string|array $event Event type(s) allowed (null = all types)
      *
      * @return null|string[] Null if parsing failed, two ISO 8601 dates otherwise
      *
@@ -888,7 +906,7 @@ class Lido extends \RecordManager\Base\Record\Lido
     /**
      * Return the event place locations associated with specified event
      *
-     * @param string $event Which event to use (omit to scan all events)
+     * @param string|array $event Event type(s) allowed (null = all types)
      *
      * @return array WKT
      */
@@ -1607,42 +1625,6 @@ class Lido extends \RecordManager\Base\Record\Lido
                                 $result[] = 'Kuva';
                                 break;
                             }
-                        }
-                    }
-                }
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * Return names of actors associated with specified event
-     *
-     * @param string|array $event        Which events to use (omit to scan all
-     *                                   events)
-     * @param string|array $role         Which roles to use (omit to scan all roles)
-     * @param bool         $includeRoles Whether to include roles
-     *
-     * @return array
-     */
-    protected function getActors($event = null, $role = null, $includeRoles = true)
-    {
-        $result = [];
-        foreach ($this->getEventNodes($event) as $eventNode) {
-            foreach ($eventNode->eventActor as $actorNode) {
-                foreach ($actorNode->actorInRole as $roleNode) {
-                    if (isset($roleNode->actor->nameActorSet->appellationValue)) {
-                        $actorRole = $this->metadataUtils->normalizeRelator(
-                            (string)$roleNode->roleActor->term
-                        );
-                        if (empty($role) || in_array($actorRole, (array)$role)) {
-                            $value = (string)$roleNode->actor->nameActorSet
-                                ->appellationValue[0];
-                            if ($includeRoles && $actorRole) {
-                                $value .= ", $actorRole";
-                            }
-                            $result[] = $value;
                         }
                     }
                 }
