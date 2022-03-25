@@ -1781,6 +1781,27 @@ class Lido extends \RecordManager\Base\Record\Lido
     }
 
     /**
+     * Get place event types
+     *
+     * @return array
+     */
+    protected function getPlaceEvents(): array
+    {
+        if (isset($this->resultCache[__METHOD__])) {
+            return $this->resultCache[__METHOD__];
+        }
+
+        // Include creation event for non-photos:
+        $events = $this->placeEvents;
+        if ($this->getObjectWorkType() !== 'valokuva') {
+            $events['valmistus'] = 999;
+            $events['creation'] = 999;
+        }
+
+        return $this->resultCache[__METHOD__] = $events;
+    }
+
+    /**
      * Get authors
      *
      * @return array

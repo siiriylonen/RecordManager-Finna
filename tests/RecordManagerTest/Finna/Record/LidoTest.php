@@ -156,11 +156,13 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
                 '1897', '1898'
             ],
             'geographic_facet' => [
+                'Ruokolahti',
                 'Imatrankoski, Ruokolahti',
                 'Imatrankoski',
                 'Ruokolahti',
             ],
             'geographic' => [
+                'Ruokolahti',
                 'Imatrankoski, Ruokolahti',
             ],
             'geographic_id_str_mv' => [],
