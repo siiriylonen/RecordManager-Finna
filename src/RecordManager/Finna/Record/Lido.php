@@ -60,14 +60,13 @@ class Lido extends \RecordManager\Base\Record\Lido
     ];
 
     /**
-     * Usage place event name reflecting the terminology in the particular LIDO
-     * records.
+     * Place event name reflecting the terminology in the particular LIDO records.
      *
      * Key is event type, value is priority (smaller more important).
      *
      * @var array
      */
-    protected $usagePlaceEvents = [
+    protected $placeEvents = [
         'käyttö' => 0,
         'use' => 0,
     ];
@@ -117,17 +116,9 @@ class Lido extends \RecordManager\Base\Record\Lido
 
         $data['identifier'] = $this->getIdentifier();
 
-        // Authors with roles:
-        $data['author'] = $this->getActors($this->mainEvents, null, true);
-        if (!empty($data['author'])) {
-            $data['author_sort'] = $data['author'][0];
-        }
-        if ($this->secondaryAuthorEvents) {
-            $data['author2']
-                = $this->getActors($this->secondaryAuthorEvents, null, true);
-        }
         // Author facets without roles:
-        $data['author_facet'] = $this->getActors($this->mainEvents, null, false);
+        $data['author_facet']
+            = $this->getActors($this->getMainEvents(), null, false);
 
         // Back-compatibility:
         $data['material'] = $data['material_str_mv'];
@@ -344,7 +335,7 @@ class Lido extends \RecordManager\Base\Record\Lido
 
         // Event places
         $locations = [];
-        foreach ([$this->mainEvents, $this->usagePlaceEvents] as $event) {
+        foreach ([$this->getMainEvents(), $this->getPlaceEvents()] as $event) {
             foreach ($this->getEventNodes($event) as $eventNode) {
                 // If there is already gml in the record, don't return anything for
                 // geocoding
@@ -435,7 +426,7 @@ class Lido extends \RecordManager\Base\Record\Lido
      */
     public function getMainAuthor()
     {
-        $authors = $this->getActors($this->mainEvents, null, false);
+        $authors = $this->getActors($this->getMainEvents(), null, false);
         return $authors ? $authors[0] : '';
     }
 
@@ -574,7 +565,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             return $id;
         };
 
-        foreach ($this->getEventNodes($this->usagePlaceEvents) as $eventNode) {
+        foreach ($this->getEventNodes($this->getPlaceEvents()) as $eventNode) {
             foreach ($eventNode->eventPlace as $eventPlace) {
                 if (isset($eventPlace->place->placeID)) {
                     $result[] = $getPlaceID($eventPlace->place->placeID);
@@ -1787,5 +1778,25 @@ class Lido extends \RecordManager\Base\Record\Lido
             }
         }
         return $results;
+    }
+
+    /**
+     * Get authors
+     *
+     * @return array
+     */
+    protected function getAuthors(): array
+    {
+        return $this->getActors($this->getMainEvents(), null, true);
+    }
+
+    /**
+     * Get secondary authors
+     *
+     * @return array
+     */
+    protected function getSecondaryAuthors(): array
+    {
+        return $this->getActors($this->getSecondaryAuthorEvents(), null, true);
     }
 }
