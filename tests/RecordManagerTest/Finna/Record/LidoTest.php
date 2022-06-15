@@ -505,6 +505,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
                 'halkaisija, pienin 15.00 cm (kuvun päällys)',
                 'leveys 5.50 cm (lieri, lierin reuna)',
                 'leveys 5.70 cm (lieri, lierin reuna)',
+                'korkeus 9 cm, kuvun pystysuora osa sivulta',
             ],
             'source_str_mv' => '__unit_test_no_source__',
             'datasource_str_mv' => '__unit_test_no_source__',

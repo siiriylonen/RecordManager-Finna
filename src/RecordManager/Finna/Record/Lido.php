@@ -1728,7 +1728,9 @@ class Lido extends \RecordManager\Base\Record\Lido
                 if ($extents) {
                     $extents = implode(', ', $extents);
                     foreach ($setResults as &$current) {
-                        $current .= " ($extents)";
+                        if (strpos($current, $extents) === false) {
+                            $current .= " ($extents)";
+                        }
                     }
                     unset($current);
                 }

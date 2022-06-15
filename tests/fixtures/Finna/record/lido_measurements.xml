@@ -74,6 +74,17 @@
               <extentMeasurements>lierin reuna</extentMeasurements>
             </objectMeasurements>
           </objectMeasurementsSet>
+          <objectMeasurementsSet>
+            <displayObjectMeasurements>korkeus 9 cm, kuvun pystysuora osa sivulta</displayObjectMeasurements>
+            <objectMeasurements>
+              <measurementsSet>
+                <measurementType>korkeus</measurementType>
+                <measurementUnit>cm</measurementUnit>
+                <measurementValue>9.00</measurementValue>
+              </measurementsSet>
+              <extentMeasurements>kuvun pystysuora osa sivulta</extentMeasurements>
+            </objectMeasurements>
+          </objectMeasurementsSet>
         </objectMeasurementsWrap>
       </objectIdentificationWrap>
     </descriptiveMetadata>
