@@ -221,12 +221,13 @@ class Lido extends \RecordManager\Base\Record\Lido
         $data['source_str_mv'] = $this->source;
         $data['datasource_str_mv'] = $this->source;
 
-        if ($this->getURLs()) {
+        if ($this->isOnline()) {
             $data['online_boolean'] = true;
             $data['online_str_mv'] = $this->source;
-            // Mark everything free until we know better
-            $data['free_online_boolean'] = true;
-            $data['free_online_str_mv'] = $this->source;
+            if ($this->isFreeOnline()) {
+                $data['free_online_boolean'] = true;
+                $data['free_online_str_mv'] = $this->source;
+            }
             if ($this->hasHiResImages()) {
                 $data['hires_image_boolean'] = true;
                 $data['hires_image_str_mv'] = $this->source;
@@ -1852,5 +1853,33 @@ class Lido extends \RecordManager\Base\Record\Lido
         if ($fields) {
             $data['hierarchy_parent_title'] = $fields;
         }
+    }
+
+    /**
+     * Check if the record is available online
+     *
+     * @return bool
+     */
+    protected function isOnline(): bool
+    {
+        if (null !== ($online = $this->getDriverParam('online', null))) {
+            return boolval($online);
+        }
+
+        return !empty($this->getUrls());
+    }
+
+    /**
+     * Check if the record is freely available online
+     *
+     * @return bool
+     */
+    protected function isFreeOnline(): bool
+    {
+        if (null !== ($free = $this->getDriverParam('freeOnline', null))) {
+            return boolval($free);
+        }
+        // Mark everything free by default:
+        return true;
     }
 }
