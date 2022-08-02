@@ -206,6 +206,11 @@ trait QdcRecordTrait
      */
     protected function inArrayFnMatch(string $needle, array $haystack): bool
     {
+        // Check for an excessively long string that would cause a warning with
+        // fnmatch:
+        if (strlen($needle) > 1024) {
+            return false;
+        }
         foreach ($haystack as $pattern) {
             if (fnmatch($pattern, $needle)) {
                 return true;
