@@ -132,26 +132,6 @@ trait QdcRecordTrait
             }
         }
 
-        // Check rights for open access or restricted access indicators that will
-        // override any existing values:
-        foreach ($this->doc->rights as $rights) {
-            $rights = trim((string)$rights);
-            if ($this->inArrayFnMatch($rights, $this->openAccessRights)) {
-                if (empty($data['free_online_boolean'])) {
-                    $data['free_online_boolean'] = true;
-                    $data['free_online_str_mv'] = $this->source;
-                }
-                break;
-            } elseif ($this->inArrayFnMatch($rights, $this->restrictedAccessRights)
-            ) {
-                if (!empty($data['free_online_boolean'])) {
-                    unset($data['free_online_boolean']);
-                    unset($data['free_online_str_mv']);
-                }
-                break;
-            }
-        }
-
         foreach ($this->doc->coverage as $coverage) {
             $attrs = $coverage->attributes();
             if ($attrs->type == 'geocoding') {
@@ -375,6 +355,18 @@ trait QdcRecordTrait
         if (null !== ($free = $this->getDriverParam('freeOnline', null))) {
             return boolval($free);
         }
+
+        // Check rights for open access or restricted access indicators:
+        foreach ($this->doc->rights as $rights) {
+            $rights = trim((string)$rights);
+            if ($this->inArrayFnMatch($rights, $this->openAccessRights)) {
+                return true;
+            }
+            if ($this->inArrayFnMatch($rights, $this->restrictedAccessRights)) {
+                return false;
+            }
+        }
+
         // Mark everything free by default:
         return true;
     }
