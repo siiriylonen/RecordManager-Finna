@@ -367,7 +367,6 @@ trait QdcRecordTrait
             }
         }
 
-        // Mark everything free by default:
-        return true;
+        return $this->getDriverParam('freeOnlineDefault', true);
     }
 }

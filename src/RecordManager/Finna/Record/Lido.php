@@ -1879,7 +1879,6 @@ class Lido extends \RecordManager\Base\Record\Lido
         if (null !== ($free = $this->getDriverParam('freeOnline', null))) {
             return boolval($free);
         }
-        // Mark everything free by default:
-        return true;
+        return $this->getDriverParam('freeOnlineDefault', true);
     }
 }

@@ -556,7 +556,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                 return false;
             }
         }
-        return true;
+        return $this->getDriverParam('freeOnlineDefault', true);
     }
 
     /**
