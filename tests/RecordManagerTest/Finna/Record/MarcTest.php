@@ -88,7 +88,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
                 '17. uud. p.',
                 'Helsinki',
                 'Tammi',
-                '2345 [2013]',
+                '2345 [2013?]',
                 '18. p. 2013',
                 'Summary field',
                 'oppaat',
