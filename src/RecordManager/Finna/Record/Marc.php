@@ -739,6 +739,7 @@ class Marc extends \RecordManager\Base\Record\Marc
 
         if ($rights = $this->getUsageRights()) {
             $data['usage_rights_str_mv'] = $rights;
+            $data['usage_rights_ext_str_mv'] = $rights;
         }
 
         // Author facet
