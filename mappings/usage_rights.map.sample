@@ -45,11 +45,11 @@
 ^No known copyright restrictions$[] = usage_D
 ^No known copyright restrictions$[] = usage_E
 
-^Public [Dd]omain.*[] = usage_A
-^Public [Dd]omain.*[] = usage_B
-^Public [Dd]omain.*[] = usage_C
-^Public [Dd]omain.*[] = usage_D
-^Public [Dd]omain.*[] = usage_E
+^[Pp]ublic [Dd]omain.*[] = usage_A
+^[Pp]ublic [Dd]omain.*[] = usage_B
+^[Pp]ublic [Dd]omain.*[] = usage_C
+^[Pp]ublic [Dd]omain.*[] = usage_D
+^[Pp]ublic [Dd]omain.*[] = usage_E
 
 ^https?://creativecommons\.org/publicdomain/.*[] = usage_A
 ^https?://creativecommons\.org/publicdomain/.*[] = usage_B
