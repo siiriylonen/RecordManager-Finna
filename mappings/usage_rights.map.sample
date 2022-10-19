@@ -8,11 +8,14 @@
 
 ^CC[ -]*BY[ -]*NC[ -]*ND.*[] = usage_E
 ^https?://creativecommons\.org/licenses/by-nc-nd/.*[] = usage_E
+^Creative Commons Attribution-NonCommercial-NoDerivs.*[] = usage_E
 
 ^CC[ -]*BY[ -]*NC[ -]*SA.*[] = usage_D
 ^CC[ -]*BY[ -]*NC[ -]*SA.*[] = usage_E
 ^https?://creativecommons\.org/licenses/by-nc-sa/.*[] = usage_D
 ^https?://creativecommons\.org/licenses/by-nc-sa/.*[] = usage_E
+^Creative Commons Attribution-NonCommercial-ShareAlike.*[] = usage_D
+^Creative Commons Attribution-NonCommercial-ShareAlike.*[] = usage_E
 
 ^CC[ -]*BY[ -]*SA.*[] = usage_B
 ^CC[ -]*BY[ -]*SA.*[] = usage_C
@@ -22,14 +25,21 @@
 ^https?://creativecommons\.org/licenses/by-sa/.*[] = usage_C
 ^https?://creativecommons\.org/licenses/by-sa/.*[] = usage_D
 ^https?://creativecommons\.org/licenses/by-sa/.*[] = usage_E
+^Creative Commons Attribution-ShareAlike.*[] = usage_B
+^Creative Commons Attribution-ShareAlike.*[] = usage_C
+^Creative Commons Attribution-ShareAlike.*[] = usage_D
+^Creative Commons Attribution-ShareAlike.*[] = usage_E
 
 ^CC[ -]*BY[ -]*ND.*[] = usage_C
 ^CC[ -]*BY[ -]*ND.*[] = usage_E
 ^https?://creativecommons\.org/licenses/by-nd/.*[] = usage_C
 ^https?://creativecommons\.org/licenses/by-nd/.*[] = usage_E
+^Creative Commons Attribution-NoDerivs.*[] = usage_C
+^Creative Commons Attribution-NoDerivs.*[] = usage_E
 
 ^CC[ -]*BY[ -]*NC.*[] = usage_D
 ^https?://creativecommons\.org/licenses/by-nc/.*[] = usage_D
+^Creative Commons Attribution-NonCommercial.*[] = usage_D
 
 ^CC[ -]*BY[ \.\d]*[] = usage_B
 ^CC[ -]*BY[ \.\d]*[] = usage_C
@@ -39,6 +49,10 @@
 ^https?://creativecommons\.org/licenses/by/.*[] = usage_C
 ^https?://creativecommons\.org/licenses/by/.*[] = usage_D
 ^https?://creativecommons\.org/licenses/by/.*[] = usage_E
+^Creative Commons Attribution.*[] = usage_B
+^Creative Commons Attribution.*[] = usage_C
+^Creative Commons Attribution.*[] = usage_D
+^Creative Commons Attribution.*[] = usage_E
 
 ^No known copyright restrictions$[] = usage_B
 ^No known copyright restrictions$[] = usage_C
@@ -50,12 +64,16 @@
 ^[Pp]ublic [Dd]omain.*[] = usage_C
 ^[Pp]ublic [Dd]omain.*[] = usage_D
 ^[Pp]ublic [Dd]omain.*[] = usage_E
-
 ^https?://creativecommons\.org/publicdomain/.*[] = usage_A
 ^https?://creativecommons\.org/publicdomain/.*[] = usage_B
 ^https?://creativecommons\.org/publicdomain/.*[] = usage_C
 ^https?://creativecommons\.org/publicdomain/.*[] = usage_D
 ^https?://creativecommons\.org/publicdomain/.*[] = usage_E
+^Creative Commons Public Domain[] = usage_A
+^Creative Commons Public Domain[] = usage_B
+^Creative Commons Public Domain[] = usage_C
+^Creative Commons Public Domain[] = usage_D
+^Creative Commons Public Domain[] = usage_E
 
 ^restricted$[] = usage_F
 
