@@ -79,8 +79,6 @@
 ^Creative Commons Public Domain[] = usage_D
 ^Creative Commons Public Domain[] = usage_E
 
-^restricted$[] = usage_F
-
 ; By default map to empty value:
 ##default =
 ; If mappings of all values results in empty, use the following:
