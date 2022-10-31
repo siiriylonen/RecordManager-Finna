@@ -330,14 +330,15 @@ class Marc extends \RecordManager\Base\Record\Marc
             $classification = trim($this->getSubfield($field080, 'a'));
             $classification .= trim($this->getSubfield($field080, 'b'));
             if ($classification) {
+                if ($aux = trim($this->getSubfields($field080, ['x' => 1]))) {
+                    $classification .= " $aux";
+                }
                 $vocab = 'udk';
                 $version = $this->getSubfields($field080, ['2' => 1]);
-                if (strpos($version, '2017') !== false) {
+                if ($version && preg_match('/(\d{4})/', $version, $matches)
+                    && 2017 <= $matches[1]
+                ) {
                     $vocab .= '2017';
-                }
-                $aux = trim($this->getSubfields($field080, ['x' => 1]));
-                if ($aux) {
-                    $classification .= " $aux";
                 }
                 $data['classification_txt_mv'][] = "$vocab $classification";
 
