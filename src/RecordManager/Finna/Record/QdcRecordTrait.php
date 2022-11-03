@@ -91,9 +91,12 @@ trait QdcRecordTrait
             );
         }
 
-        if ($range = $this->getPublicationDateRange()) {
-            $data['search_daterange_mv'][] = $data['publication_daterange']
-                = $this->dateRangeToStr($range);
+        if ($ranges = $this->getPublicationDateRanges()) {
+            $data['publication_daterange'] = $this->dateRangeToStr(reset($ranges));
+            foreach ($ranges as $range) {
+                $stringDate = $this->dateRangeToStr($range);
+                $data['search_daterange_mv'][] = $stringDate;
+            }
         }
 
         foreach ($this->getRelationUrls() as $url) {
@@ -237,19 +240,25 @@ trait QdcRecordTrait
     }
 
     /**
-     * Return publication year/date range
+     * Return publication year/date ranges
      *
-     * @return array|null
+     * @return array
      */
-    protected function getPublicationDateRange()
+    protected function getPublicationDateRanges(): array
     {
-        $year = $this->getPublicationYear();
-        if ($year) {
-            $startDate = "$year-01-01T00:00:00Z";
-            $endDate = "$year-12-31T23:59:59Z";
-            return [$startDate, $endDate];
+        $result = [];
+        foreach ([$this->doc->date, $this->doc->issued] as $arr) {
+            foreach ($arr as $date) {
+                if (preg_match_all('{\d{4}}', $date, $matches)) {
+                    $years = $matches[0];
+                    $result[] = [
+                        $years[0] . '-01-01T00:00:00Z',
+                        ($years[1] ?? $years[0]) . '-12-31T23:59:59Z'
+                    ];
+                }
+            }
         }
-        return null;
+        return $result;
     }
 
     /**
