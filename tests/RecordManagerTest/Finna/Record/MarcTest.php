@@ -47,7 +47,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testMarc1()
     {
-        $record = $this->createRecord(
+        $record = $this->createMarcRecord(
             Marc::class,
             'marc1.xml',
             [
@@ -295,7 +295,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testMarc2()
     {
-        $record = $this->createRecord(
+        $record = $this->createMarcRecord(
             Marc::class,
             'marc2.xml',
             [],
@@ -485,7 +485,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testMarcGeo()
     {
-        $record = $this->createRecord(
+        $record = $this->createMarcRecord(
             Marc::class,
             'marc_geo.xml',
             [],
@@ -687,7 +687,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testMarcThesis1()
     {
-        $record = $this->createRecord(
+        $record = $this->createMarcRecord(
             Marc::class,
             'marc-thesis1.xml',
             [],
@@ -830,7 +830,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testMarcThesis2()
     {
-        $record = $this->createRecord(
+        $record = $this->createMarcRecord(
             Marc::class,
             'marc-thesis2.xml',
             [],
@@ -971,7 +971,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
      */
     public function testMarcDateRange()
     {
-        $record = $this->createRecord(
+        $record = $this->createMarcRecord(
             Marc::class,
             'marc-daterange.xml',
             [],

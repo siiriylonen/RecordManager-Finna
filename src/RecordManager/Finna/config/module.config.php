@@ -41,7 +41,7 @@ return [
                     \RecordManager\Finna\Record\Lido::class => \RecordManager\Base\Record\AbstractRecordFactory::class,
                     \RecordManager\Finna\Record\Lrmi::class => \RecordManager\Base\Record\AbstractRecordWithHttpAndDbFactory::class,
                     \RecordManager\Finna\Record\Marc::class => \RecordManager\Finna\Record\MarcFactory::class,
-                    \RecordManager\Finna\Record\MarcAuthority::class => \RecordManager\Base\Record\AbstractRecordFactory::class,
+                    \RecordManager\Finna\Record\MarcAuthority::class => \RecordManager\Finna\Record\MarcFactory::class,
                     \RecordManager\Finna\Record\Qdc::class => \RecordManager\Base\Record\AbstractRecordWithHttpAndDbFactory::class,
                 ],
                 'aliases' => [

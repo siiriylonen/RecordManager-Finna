@@ -84,10 +84,10 @@ class MarcAuthority extends \RecordManager\Base\Record\MarcAuthority
             as $code
         ) {
             $subfields = in_array($code, ['400', '500'])
-                ? ['a' => 1, 'b' => 1, 'c' => 1]
-                : ['a' => 1, 'b' => 1];
+                ? ['a', 'b', 'c']
+                : ['a', 'b'];
 
-            foreach ($this->getFields($code) as $field) {
+            foreach ($this->record->getFields($code) as $field) {
                 $result = array_merge(
                     $result,
                     [
