@@ -183,7 +183,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         if ($this->source == 'kyyti' && $this->record->getField('245')) {
             $enum = $this->getFieldSubfields('362', ['a']);
             if ($enum) {
-                $this->record->updateFieldSubfield('245', 0, 'n', -1, $enum);
+                $this->record->updateFieldSubfield('245', 0, 'n', null, $enum);
             }
         }
     }
