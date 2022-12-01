@@ -65,7 +65,7 @@ class Lrmi extends \RecordManager\Base\Record\Lrmi
      * @param Database $db Database connection. Omit to avoid database lookups for
      *                     related records.
      *
-     * @return array
+     * @return array<string, string|array<int, string>>
      */
     public function toSolrArray(Database $db = null)
     {
@@ -109,10 +109,14 @@ class Lrmi extends \RecordManager\Base\Record\Lrmi
         }
 
         // Topic ids
-        $data['topic_id_str_mv'] = array_merge(
-            $data['topic_id_str_mv'] ?? [],
-            array_filter(array_column($this->getTopicsExtended(), 'id'))
-        );
+
+        // phpcs:ignore
+        /** @psalm-var list<string> */
+        $topicIds = $data['topic_id_str_mv'] ?? [];
+        $data['topic_id_str_mv'] = [
+            ...$topicIds,
+            ...array_filter(array_column($this->getTopicsExtended(), 'id'))
+        ];
 
         return $data;
     }

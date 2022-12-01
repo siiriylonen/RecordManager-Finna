@@ -241,9 +241,9 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
             'creation_daterange' => '[1897-01-01 TO 1897-12-31]',
             'source_str_mv' => '__unit_test_no_source__',
             'datasource_str_mv' => '__unit_test_no_source__',
-            'online_boolean' => true,
+            'online_boolean' => '1',
             'online_str_mv' => '__unit_test_no_source__',
-            'free_online_boolean' => true,
+            'free_online_boolean' => '1',
             'free_online_str_mv' => '__unit_test_no_source__',
             'location_geo' => [
             ],

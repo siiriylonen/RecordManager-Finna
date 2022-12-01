@@ -55,49 +55,42 @@ class MarcAuthority extends \RecordManager\Base\Record\MarcAuthority
      * @param Database $db Database connection. Omit to avoid database lookups for
      *                     related records.
      *
-     * @return array
+     * @return array<string, string|array<int, string>>
      */
     public function toSolrArray(Database $db = null)
     {
         $data = parent::toSolrArray($db);
 
-        $data['allfields']
-            = array_merge(
-                $data['allfields'],
-                [$this->getHeading()],
-                $this->getAlternativeNames()
-            );
+        $data['allfields'][] = $this->getHeading();
+        $data['allfields'] = [
+            ...$data['allfields'],
+            ...$this->getAlternativeNames()
+        ];
         return $data;
     }
 
     /**
      * Get alternative names.
      *
-     * @param array $additional List of additional fields to return
+     * @param array<int, string> $additional List of additional fields to return
      *
-     * @return array
+     * @return array<int, string>
      */
     public function getAlternativeNames($additional = [])
     {
         $result = [];
-        foreach (array_merge(['400', '410', '500', '510'], $additional)
-            as $code
-        ) {
+        $defaultFields = ['400', '410', '500', '510'];
+        foreach ([...$defaultFields, ...$additional]as $code) {
             $subfields = in_array($code, ['400', '500'])
                 ? ['a', 'b', 'c']
                 : ['a', 'b'];
 
             foreach ($this->record->getFields($code) as $field) {
-                $result = array_merge(
-                    $result,
-                    [
-                        implode(
-                            $this->nameDelimiter,
-                            $this->trimFields(
-                                $this->getSubfieldsArray($field, $subfields)
-                            )
-                        )
-                    ]
+                $result[] = implode(
+                    $this->nameDelimiter,
+                    $this->trimFields(
+                        $this->getSubfieldsArray($field, $subfields)
+                    )
                 );
             }
         }
