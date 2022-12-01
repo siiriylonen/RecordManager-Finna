@@ -47,7 +47,7 @@ class Aipa extends Qdc
      * @param Database $db Database connection. Omit to avoid database lookups for
      *                     related records.
      *
-     * @return array
+     * @return array<string, string|array<int, string>>
      */
     public function toSolrArray(Database $db = null)
     {
