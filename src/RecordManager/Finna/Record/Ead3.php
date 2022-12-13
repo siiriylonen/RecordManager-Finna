@@ -844,14 +844,38 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
      *
      * @return array
      */
-    public function getTopicIDs()
+    protected function getTopicIDs(): array
     {
-        $result = $this->getTopicTermsFromNodeWithRelators(
+        $result = $this->getRawTopicIds();
+        return $this->addNamespaceToAuthorityIds($result, 'geographic');
+    }
+
+    /**
+     * Get all topic identifiers (for enrichment)
+     *
+     * @return array
+     */
+    public function getRawTopicIds(): array
+    {
+        return $this->getTopicTermsFromNodeWithRelators(
             'subject',
             self::SUBJECT_RELATORS,
             true
         );
-        return $this->addNamespaceToAuthorityIds($result, 'geographic');
+    }
+
+    /**
+     * Get all geographic topic identifiers (for enrichment)
+     *
+     * @return array
+     */
+    public function getRawGeographicTopicIds(): array
+    {
+        return $this->getTopicTermsFromNodeWithRelators(
+            'geogname',
+            self::GEOGRAPHIC_SUBJECT_RELATORS,
+            true
+        );
     }
 
     /**
@@ -874,11 +898,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
      */
     protected function getGeographicTopicIDs()
     {
-        $result = $this->getTopicTermsFromNodeWithRelators(
-            'geogname',
-            self::GEOGRAPHIC_SUBJECT_RELATORS,
-            true
-        );
+        $result = $this->getRawGeographicTopicIds();
         return $this->addNamespaceToAuthorityIds($result, 'geographic');
     }
 

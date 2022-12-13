@@ -44,6 +44,8 @@ use RecordManager\Base\Database\DatabaseInterface as Database;
  */
 class Lrmi extends \RecordManager\Base\Record\Lrmi
 {
+    use AuthoritySupportTrait;
+
     /**
      * Fields that are not included in allfield.
      *
@@ -109,14 +111,7 @@ class Lrmi extends \RecordManager\Base\Record\Lrmi
         }
 
         // Topic ids
-
-        // phpcs:ignore
-        /** @psalm-var list<string> */
-        $topicIds = $data['topic_id_str_mv'] ?? [];
-        $data['topic_id_str_mv'] = [
-            ...$topicIds,
-            ...array_filter(array_column($this->getTopicsExtended(), 'id'))
-        ];
+        $data['topic_id_str_mv'] = $this->getTopicIds();
 
         return $data;
     }
@@ -171,5 +166,16 @@ class Lrmi extends \RecordManager\Base\Record\Lrmi
         }
 
         return !empty($this->doc->material);
+    }
+
+    /**
+     * Return subject identifiers associated with object.
+     *
+     * @return array
+     */
+    protected function getTopicIDs(): array
+    {
+        $result = $this->getTopicData(true);
+        return $this->addNamespaceToAuthorityIds($result, 'topic');
     }
 }

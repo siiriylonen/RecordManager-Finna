@@ -530,28 +530,21 @@ class Lido extends \RecordManager\Base\Record\Lido
     }
 
     /**
-     * Return subject identifiers associated with object.
+     * Get all topic identifiers (for enrichment)
      *
-     * @param string[] $exclude List of subject types to exclude (defaults to
-     *                          'iconclass' since it doesn't contain human readable
-     *                          terms)
-     *
-     * @link   http://www.lido-schema.org/schema/v1.0/lido-v1.0-schema-listing.html
-     * #subjectComplexType
      * @return array
      */
-    public function getTopicIDs($exclude = ['iconclass'])
+    public function getRawTopicIds(): array
     {
-        $result = parent::getTopicIDs();
-        return $this->addNamespaceToAuthorityIds($result, 'topic');
+        return parent::getTopicIDs();
     }
 
     /**
-     * Get geographic topic identifiers
+     * Get all geographic topic identifiers (for enrichment)
      *
      * @return array
      */
-    protected function getGeographicTopicIDs()
+    public function getRawGeographicTopicIds(): array
     {
         $result = [];
 
@@ -581,6 +574,34 @@ class Lido extends \RecordManager\Base\Record\Lido
             }
         }
 
+        return $result;
+    }
+
+    /**
+     * Return subject identifiers associated with object.
+     *
+     * @param string[] $exclude List of subject types to exclude (defaults to
+     *                          'iconclass' since it doesn't contain human readable
+     *                          terms)
+     *
+     * @link   http://www.lido-schema.org/schema/v1.0/lido-v1.0-schema-listing.html
+     * #subjectComplexType
+     * @return array
+     */
+    protected function getTopicIDs($exclude = ['iconclass']): array
+    {
+        $result = parent::getTopicIDs();
+        return $this->addNamespaceToAuthorityIds($result, 'topic');
+    }
+
+    /**
+     * Get geographic topic identifiers
+     *
+     * @return array
+     */
+    protected function getGeographicTopicIDs()
+    {
+        $result = $this->getRawGeographicTopicIds();
         return $this->addNamespaceToAuthorityIds($result, 'geographic');
     }
 

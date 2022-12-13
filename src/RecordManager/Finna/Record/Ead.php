@@ -389,7 +389,7 @@ class Ead extends \RecordManager\Base\Record\Ead
      *
      * @return array
      */
-    public function getTopicIDs()
+    protected function getTopicIDs(): array
     {
         $result = parent::getTopicIDs();
         return $this->addNamespaceToAuthorityIds($result, 'topic');
