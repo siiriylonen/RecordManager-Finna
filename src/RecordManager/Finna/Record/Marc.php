@@ -2086,6 +2086,7 @@ class Marc extends \RecordManager\Base\Record\Marc
     {
         $result = $this->getFieldsSubfields(
             [
+                [MarcHandler::GET_NORMAL, '567', ['b']],
                 [MarcHandler::GET_NORMAL, '600', ['a', 'x']],
                 [MarcHandler::GET_NORMAL, '610', ['a', 'x']],
                 [MarcHandler::GET_NORMAL, '611', ['a', 'x']],
@@ -2121,7 +2122,8 @@ class Marc extends \RecordManager\Base\Record\Marc
             ...$this->getFieldsSubfields(
                 [
                     [MarcHandler::GET_NORMAL, '385', ['a']],
-                    [MarcHandler::GET_NORMAL, '356', ['a']]
+                    [MarcHandler::GET_NORMAL, '356', ['a']],
+                    [MarcHandler::GET_NORMAL, '567', ['b']]
                 ]
             )
         ];
