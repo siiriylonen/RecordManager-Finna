@@ -115,6 +115,18 @@ class Marc extends \RecordManager\Base\Record\Marc
     ];
 
     /**
+     * Field specs for ISBN fields
+     *
+     * @var array
+     */
+    protected $isbnFields = [
+        [MarcHandler::GET_NORMAL, '020', ['a']],
+        [MarcHandler::GET_NORMAL, '020', ['z']],
+        [MarcHandler::GET_NORMAL, '773', ['z']],
+        [MarcHandler::GET_NORMAL, '776', ['z']],
+    ];
+
+    /**
      * Constructor
      *
      * @param array               $config              Main configuration
@@ -935,17 +947,17 @@ class Marc extends \RecordManager\Base\Record\Marc
             = $this->metadataUtils->normalizeLanguageStrings($subtitleLanguages);
 
         $identifierFields = [
-            'ISBN' => [MarcHandler::GET_NORMAL, '020', ['a']],
-            'ISSN' => [MarcHandler::GET_NORMAL, '022', ['a']],
-            'OAN' => [MarcHandler::GET_NORMAL, '025', ['a']],
-            'FI' => [MarcHandler::GET_NORMAL, '026', ['a', 'b']],
-            'STRN' => [MarcHandler::GET_NORMAL, '027', ['a']],
-            'PDN' => [MarcHandler::GET_NORMAL, '028', ['a']]
+            'ISBN' => $this->isbnFields,
+            'ISSN' => [[MarcHandler::GET_NORMAL, '022', ['a']]],
+            'OAN' => [[MarcHandler::GET_NORMAL, '025', ['a']]],
+            'FI' => [[MarcHandler::GET_NORMAL, '026', ['a', 'b']]],
+            'STRN' => [[MarcHandler::GET_NORMAL, '027', ['a']]],
+            'PDN' => [[MarcHandler::GET_NORMAL, '028', ['a']]],
         ];
 
         $identifiers = [];
         foreach ($identifierFields as $idKey => $settings) {
-            $ids = $this->getFieldsSubfields([$settings]);
+            $ids = $this->getFieldsSubfields($settings, false, true, true);
             $ids = array_map(
                 function ($s) use ($idKey) {
                     return "$idKey $s";
@@ -1850,17 +1862,16 @@ class Marc extends \RecordManager\Base\Record\Marc
         ];
         $allFields = [];
         // Include ISBNs, also normalized if possible
-        foreach ($this->record->getFields('020') as $field) {
-            $isbns = $this->getSubfieldsArray($field, ['a', 'z']);
-            foreach ($isbns as $isbn) {
-                if (strlen($isbn) < 10) {
-                    continue;
-                }
-                $allFields[] = $isbn;
-                $normalized = $this->metadataUtils->normalizeISBN($isbn);
-                if ($normalized && $normalized !== $isbn) {
-                    $allFields[] = $normalized;
-                }
+        foreach ($this->getFieldsSubfields($this->isbnFields, false, true, true)
+            as $isbn
+        ) {
+            if (strlen($isbn) < 10) {
+                continue;
+            }
+            $allFields[] = $isbn;
+            $normalized = $this->metadataUtils->normalizeISBN($isbn);
+            if ($normalized && $normalized !== $isbn) {
+                $allFields[] = $normalized;
             }
         }
         foreach ($this->record->getAllFields() as $field) {
