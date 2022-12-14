@@ -806,7 +806,7 @@ class Marc extends \RecordManager\Base\Record\Marc
      */
     protected function getTopicIDs(): array
     {
-        $fieldTags = ['600', '610', '611', '630', '650'];
+        $fieldTags = ['567', '600', '610', '611', '630', '650'];
         $result = [];
         foreach ($fieldTags as $tag) {
             foreach ($this->record->getFields($tag) as $field) {
