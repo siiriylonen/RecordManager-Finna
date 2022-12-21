@@ -30,6 +30,7 @@ namespace RecordManager\Finna\Record;
 use RecordManager\Base\Database\DatabaseInterface as Database;
 use RecordManager\Base\Marc\Marc as MarcHandler;
 use RecordManager\Base\Record\CreateRecordTrait;
+use RecordManager\Base\Record\Marc\FormatCalculator;
 use RecordManager\Base\Record\PluginManager as RecordPluginManager;
 use RecordManager\Base\Utils\LcCallNumber;
 use RecordManager\Base\Utils\Logger;
@@ -134,6 +135,7 @@ class Marc extends \RecordManager\Base\Record\Marc
      * @param Logger              $logger              Logger
      * @param MetadataUtils       $metadataUtils       Metadata utilities
      * @param callable            $recordCallback      MARC record creation callback
+     * @param FormatCalculator    $formatCalculator    Record format calculator
      * @param RecordPluginManager $recordPluginManager Record plugin manager
      */
     public function __construct(
@@ -142,6 +144,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         Logger $logger,
         MetadataUtils $metadataUtils,
         callable $recordCallback,
+        FormatCalculator $formatCalculator,
         RecordPluginManager $recordPluginManager
     ) {
         parent::__construct(
@@ -149,7 +152,8 @@ class Marc extends \RecordManager\Base\Record\Marc
             $dataSourceConfig,
             $logger,
             $metadataUtils,
-            $recordCallback
+            $recordCallback,
+            $formatCalculator
         );
 
         $this->recordPluginManager = $recordPluginManager;
@@ -300,7 +304,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             $field = trim($field);
             if ($field) {
                 $data['author2'][] = $field;
-                $data['author2_role'][] = '-';
+                $data['author2_role'][] = '';
             }
         }
         // 979l = component part author id's
@@ -2221,7 +2225,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         return $this->getAuthorsByRelator(
             $fieldSpecs,
             $this->primaryAuthorRelators,
-            ['700'],
+            ['100'],
             true,
             true
         );
@@ -2243,7 +2247,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         return $this->getAuthorsByRelator(
             $fieldSpecs,
             $this->primaryAuthorRelators,
-            ['700'],
+            ['100'],
             false,
             true
         );
