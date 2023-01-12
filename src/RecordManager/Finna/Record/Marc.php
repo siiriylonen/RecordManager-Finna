@@ -1562,53 +1562,59 @@ class Marc extends \RecordManager\Base\Record\Marc
      * Get alternate titles
      *
      * @return array
+     *
+     * @psalm-suppress DuplicateArrayKey
      */
     protected function getAltTitles(): array
     {
-        return array_values(
-            array_unique(
-                $this->getFieldsSubfields(
+        $altTitles = $this->getFieldsSubfields(
+            [
+                [MarcHandler::GET_ALT, '245', ['a', 'b']],
+                [MarcHandler::GET_BOTH, '130', [
+                    'a', 'd', 'f', 'g', 'h', 'k', 'l', 'n', 'p', 'r', 's',
+                    't'
+                ]],
+                [MarcHandler::GET_BOTH, '240', [
+                    'a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p',
+                    'r', 's'
+                ]],
+                [MarcHandler::GET_BOTH, '243', [
+                    'a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p',
+                    'r', 's'
+                ]],
+                [MarcHandler::GET_BOTH, '246', ['a', 'b', 'n', 'p']],
+                // Use only 700 fields that contain subfield 't'
+                [
+                    MarcHandler::GET_BOTH,
+                    '700',
                     [
-                        [MarcHandler::GET_ALT, '245', ['a', 'b']],
-                        [MarcHandler::GET_BOTH, '130', [
-                            'a', 'd', 'f', 'g', 'h', 'k', 'l', 'n', 'p', 'r', 's',
-                            't'
-                        ]],
-                        [MarcHandler::GET_BOTH, '240', [
-                            'a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p',
-                            'r', 's'
-                        ]],
-                        [MarcHandler::GET_BOTH, '243', [
-                            'a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p',
-                            'r', 's'
-                        ]],
-                        [MarcHandler::GET_BOTH, '246', ['a', 'b', 'n', 'p']],
-                        [MarcHandler::GET_BOTH, '505', ['t']],
-                        // Use only 700 fields that contain subfield 't'
-                        [
-                            MarcHandler::GET_BOTH,
-                            '700',
-                            [
-                                't', 'm', 'r', 'h', 'i', 'g', 'n', 'p', 's', 'l',
-                                'o', 'k'
-                            ],
-                            ['t']
-                        ],
-                        [MarcHandler::GET_BOTH, '730', [
-                            'a', 'd', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o',
-                            'p', 'r', 's', 't'
-                        ]],
-                        [MarcHandler::GET_BOTH, '740', ['a']],
-                        // 979b = component part title
-                        [MarcHandler::GET_BOTH, '979', ['b']],
-                        // 979e = component part uniform title
-                        [MarcHandler::GET_BOTH, '979', ['e']],
-                        // Finnish 9xx reference field
-                        [MarcHandler::GET_BOTH, '940', ['a']],
-                    ]
-                )
-            )
+                        't', 'm', 'r', 'h', 'i', 'g', 'n', 'p', 's', 'l',
+                        'o', 'k'
+                    ],
+                    ['t']
+                ],
+                [MarcHandler::GET_BOTH, '730', [
+                    'a', 'd', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o',
+                    'p', 'r', 's', 't'
+                ]],
+                [MarcHandler::GET_BOTH, '740', ['a']],
+                // 979b = component part title
+                [MarcHandler::GET_BOTH, '979', ['b']],
+                // 979e = component part uniform title
+                [MarcHandler::GET_BOTH, '979', ['e']],
+                // Finnish 9xx reference field
+                [MarcHandler::GET_BOTH, '940', ['a']],
+            ]
         );
+        $altTitles = [
+            ...$altTitles,
+            ...array_map(
+                [$this->metadataUtils, 'stripTrailingPunctuation'],
+                $this->record->getFieldsSubfields('505', ['t'], null)
+            )
+        ];
+
+        return array_values(array_unique($altTitles));
     }
 
     /**
