@@ -323,7 +323,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
             if (!$yearRangeStr) {
                 return $data;
             }
-            $yearRangeStr = html_entity_decode('&#8206;') . " ($yearRangeStr)";
+            $yearRangeStr = "\u{200E}" . " ($yearRangeStr)";
             foreach (
                 ['title_full', 'title_sort', 'title', 'title_short']
                 as $field

@@ -265,7 +265,7 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTest
     {
         $ndash = html_entity_decode('&#x2013;', ENT_NOQUOTES, 'UTF-8');
         $mdash = html_entity_decode('&#x2014;', ENT_NOQUOTES, 'UTF-8');
-        $ltr = html_entity_decode('&#8206;');
+        $ltr = "\u{200E}";
 
         $noYear = [
             'no year ndash' => [
