@@ -323,7 +323,8 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
             if (!$yearRangeStr) {
                 return $data;
             }
-            $yearRangeStr = " ($yearRangeStr)";
+            // Append with LTR mark first to ensure correct text direction
+            $yearRangeStr = "\u{200E} ($yearRangeStr)";
             foreach (
                 ['title_full', 'title_sort', 'title', 'title_short']
                 as $field
