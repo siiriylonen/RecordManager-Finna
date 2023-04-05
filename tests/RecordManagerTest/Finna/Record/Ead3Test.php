@@ -509,7 +509,7 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTest
         $fields = $this->createRecord(Ead3::class, 'sks.xml', [], 'Finna')
             ->toSolrArray();
         unset($fields['fullrecord']);
-        $ltr = html_entity_decode('&#8206;');
+        $ltr = "\u{200E}";
 
         $expected = [
             'record_format' => 'ead3',
