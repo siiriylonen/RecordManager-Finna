@@ -680,7 +680,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                     foreach (explode(', ', (string)$unitdate) as $single) {
                         $date = str_replace('-', '/', $single);
                         if (false === strpos($date, '/')) {
-                            $date = "${date}/${date}";
+                            $date = "$date/$date";
                         }
                         $result[] = $this->parseDateRange($date);
                     }
