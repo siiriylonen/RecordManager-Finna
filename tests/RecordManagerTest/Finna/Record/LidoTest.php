@@ -131,7 +131,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTest
             'title_full' => 'Imatrankoski',
             'title_short' => 'Imatrankoski',
             'title' => 'Imatrankoski',
-            'title_sort' => 'Imatrankoski',
+            'title_sort' => 'imatrankoski',
             'title_alt' => [],
             'format' => 'kuva',
             'institution' => 'Museoviraston kuva-arkisto/',

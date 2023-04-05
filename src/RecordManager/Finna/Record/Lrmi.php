@@ -135,11 +135,7 @@ class Lrmi extends \RecordManager\Base\Record\Lrmi
             }
         }
         if ($forFiling) {
-            $title = $this->metadataUtils->stripLeadingPunctuation($title);
-            $title = $this->metadataUtils->stripLeadingArticle($title);
-            // Again, just in case stripping the article affected this
-            $title = $this->metadataUtils->stripLeadingPunctuation($title);
-            $title = mb_strtolower($title, 'UTF-8');
+            $title = $this->metadataUtils->createSortTitle($title);
         }
         return $title;
     }
