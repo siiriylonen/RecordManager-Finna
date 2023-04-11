@@ -1519,7 +1519,7 @@ class Lido extends AbstractRecord
                 continue;
             }
 
-            $type = (string)$relatedWork['type'];
+            $type = (string)($relatedWork->object->objectType->term ?? '');
             if ('collection' === $type) {
                 $data['hierarchy_top_id'] = $relatedId;
                 $data['hierarchy_top_title'] = $relatedTitle;
