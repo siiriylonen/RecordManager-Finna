@@ -4,7 +4,7 @@
  *
  * PHP version 7
  *
- * Copyright (C) The National Library of Finland 2012-2022.
+ * Copyright (C) The National Library of Finland 2012-2023.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2,
@@ -22,6 +22,7 @@
  * @category DataManagement
  * @package  RecordManager
  * @author   Ere Maijala <ere.maijala@helsinki.fi>
+ * @author   Juha Luoma <juha.luoma@helsinki.fi>
  * @license  http://opensource.org/licenses/gpl-2.0.1 GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
@@ -44,6 +45,7 @@ use RecordManager\Base\Utils\MetadataUtils;
  * @category DataManagement
  * @package  RecordManager
  * @author   Ere Maijala <ere.maijala@helsinki.fi>
+ * @author   Juha Luoma <juha.luoma@helsinki.fi>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
@@ -52,6 +54,7 @@ class Marc extends \RecordManager\Base\Record\Marc
     use AuthoritySupportTrait;
     use CreateRecordTrait;
     use DateSupportTrait;
+    use MimeTypeTrait;
 
     /**
      * Record plugin manager
@@ -157,6 +160,10 @@ class Marc extends \RecordManager\Base\Record\Marc
         );
 
         $this->recordPluginManager = $recordPluginManager;
+        $this->extensionDetector
+            = new \League\MimeTypeDetection\ExtensionMimeTypeDetector();
+        $this->extensionMapper
+            = new \League\MimeTypeDetection\GeneratedExtensionToMimeTypeMap();
     }
 
     /**
@@ -445,10 +452,16 @@ class Marc extends \RecordManager\Base\Record\Marc
         }
 
         // URLs
-        foreach ($this->getLinkData() as $link) {
+        $onlineUrls = $this->getLinkData();
+        foreach ($onlineUrls as $link) {
             $link['source'] = $this->source;
             $data['online_urls_str_mv'][] = json_encode($link);
         }
+        $data['mime_type_str_mv'] = array_values(
+            array_unique(
+                array_column($onlineUrls, 'mimeType')
+            )
+        );
 
         if ($this->isOnline()) {
             $data['online_boolean'] = '1';
@@ -2494,7 +2507,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             return $this->resultCache[__FUNCTION__];
         }
 
-        $result = [];
+        $results = [];
         $fields = $this->record->getFields('856');
         foreach ($fields as $field) {
             if ($this->record->getSubfield($field, '3')) {
@@ -2515,15 +2528,26 @@ class Marc extends \RecordManager\Base\Record\Marc
             ) {
                 continue;
             }
+            $result = [
+                'url' => $url
+            ];
             $text = $this->record->getSubfield($field, 'y');
             if (!$text) {
                 $text = $this->record->getSubfield($field, 'z');
             }
-            $result[] = compact('url', 'text');
+            $result['text'] = $text;
+            $mimeType = $this->getLinkMimeType(
+                $url,
+                $this->record->getSubfield($field, 'q')
+            );
+            if ($mimeType) {
+                $result['mimeType'] = $mimeType;
+            }
+            $results[] = $result;
         }
 
-        $this->resultCache[__FUNCTION__] = $result;
-        return $result;
+        $this->resultCache[__FUNCTION__] = $results;
+        return $results;
     }
 
     /**

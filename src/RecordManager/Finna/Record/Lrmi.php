@@ -4,7 +4,7 @@
  *
  * PHP version 7
  *
- * Copyright (C) The National Library of Finland 2011-2020.
+ * Copyright (C) The National Library of Finland 2011-2023.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2,
@@ -23,12 +23,16 @@
  * @package  RecordManager
  * @author   Ere Maijala <ere.maijala@helsinki.fi>
  * @author   Samuli Sillanpää <samuli.sillanpaa@helsinki.fi>
+ * @author   Juha Luoma <juha.luoma@helsinki.fi>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
 namespace RecordManager\Finna\Record;
 
 use RecordManager\Base\Database\DatabaseInterface as Database;
+use RecordManager\Base\Http\ClientManager;
+use RecordManager\Base\Utils\Logger;
+use RecordManager\Base\Utils\MetadataUtils;
 
 /**
  * Lrmi record class
@@ -39,6 +43,7 @@ use RecordManager\Base\Database\DatabaseInterface as Database;
  * @package  RecordManager
  * @author   Ere Maijala <ere.maijala@helsinki.fi>
  * @author   Samuli Sillanpää <samuli.sillanpaa@helsinki.fi>
+ * @author   Juha Luoma <juha.luoma@helsinki.fi>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
@@ -62,6 +67,38 @@ class Lrmi extends \RecordManager\Base\Record\Lrmi
     }
 
     /**
+     * Constructor
+     *
+     * @param array         $config           Main configuration
+     * @param array         $dataSourceConfig Data source settings
+     * @param Logger        $logger           Logger
+     * @param MetadataUtils $metadataUtils    Metadata utilities
+     * @param ClientManager $httpManager      HTTP client manager
+     * @param ?Database     $db               Database
+     */
+    public function __construct(
+        array $config,
+        array $dataSourceConfig,
+        Logger $logger,
+        MetadataUtils $metadataUtils,
+        ClientManager $httpManager,
+        Database $db = null
+    ) {
+        parent::__construct(
+            $config,
+            $dataSourceConfig,
+            $logger,
+            $metadataUtils,
+            $httpManager,
+            $db
+        );
+        $this->extensionDetector
+            = new \League\MimeTypeDetection\ExtensionMimeTypeDetector();
+        $this->extensionMapper
+            = new \League\MimeTypeDetection\GeneratedExtensionToMimeTypeMap();
+    }
+
+    /**
      * Return fields to be indexed in Solr
      *
      * @param Database $db Database connection. Omit to avoid database lookups for
@@ -74,19 +111,6 @@ class Lrmi extends \RecordManager\Base\Record\Lrmi
         $data = $this->_toSolrArray();
 
         $doc = $this->doc;
-
-        // Materials
-        foreach ($doc->material ?? [] as $material) {
-            if ($url = (string)($material->url ?? '')) {
-                $link = [
-                    'url' => $url,
-                    'text' => trim((string)($material->name ?? $url)),
-                    'source' => $this->source
-                ];
-                $data['online_urls_str_mv'][] = json_encode($link);
-            }
-        }
-
         // Facets
         foreach ($doc->educationalAudience as $audience) {
             $data['educational_audience_str_mv'][]
@@ -114,6 +138,35 @@ class Lrmi extends \RecordManager\Base\Record\Lrmi
         $data['topic_id_str_mv'] = $this->getTopicIds();
 
         return $data;
+    }
+
+    /**
+     * Get online URLs
+     *
+     * @return array
+     */
+    public function getOnlineUrls(): array
+    {
+        $results = [];
+        // Materials
+        foreach ($this->doc->material ?? [] as $material) {
+            if ($url = (string)($material->url ?? '')) {
+                $result = [
+                    'url' => $url,
+                    'text' => trim((string)($material->name ?? $url)),
+                    'source' => $this->source,
+                ];
+                $mimeType = $this->getLinkMimeType(
+                    $url,
+                    trim($material->format ?? '')
+                );
+                if ($mimeType) {
+                    $result['mimeType'] = $mimeType;
+                }
+                $results[] = $result;
+            }
+        }
+        return $results;
     }
 
     /**
