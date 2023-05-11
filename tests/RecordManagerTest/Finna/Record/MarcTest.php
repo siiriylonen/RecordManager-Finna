@@ -1055,16 +1055,22 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
     }
 
     /**
-     * Test MARC UDK classification
+     * Test MARC UDK and extra classifications
      *
      * @return void
      */
-    public function testMarcUDK()
+    public function testMarcUDKAndExtraClassifications()
     {
         $record = $this->createMarcRecord(
             Marc::class,
             'marc-udk.xml',
-            [],
+            [
+                '__unit_test_no_source__' => [
+                    'driverParams' => [
+                        'classifications = "245a=title"',
+                    ],
+                ],
+            ],
             'Finna',
             [
                 $this->createMock(\RecordManager\Base\Record\PluginManager::class)
@@ -1080,6 +1086,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
                 'udk2 new080-2',
                 'udkx unknown080-1',
                 'udkx unknown080-2',
+                'title Lentolehti',
             ],
             $fields['classification_txt_mv']
         );

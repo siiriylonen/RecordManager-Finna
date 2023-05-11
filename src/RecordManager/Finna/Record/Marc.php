@@ -404,6 +404,13 @@ class Marc extends \RecordManager\Base\Record\Marc
                 }
             }
         }
+        // Extra classifications
+        if ($extraClassifications = $this->getExtraClassifications()) {
+            $data['classification_txt_mv'] = [
+                ...($data['classification_txt_mv'] ?? []),
+                ...$extraClassifications,
+            ];
+        }
 
         // Keep classification_str_mv for backward-compatibility for now
         if (isset($data['classification_txt_mv'])) {
@@ -2600,5 +2607,45 @@ class Marc extends \RecordManager\Base\Record\Marc
         }
 
         return $access !== 'onlineaccesswithauthorization';
+    }
+
+    /**
+     * Get extra classifications based on driver params
+     *
+     * @return array
+     */
+    protected function getExtraClassifications(): array
+    {
+        if (!($extraFields = $this->getDriverParam('classifications', false))) {
+            return [];
+        }
+
+        $result = [];
+        foreach (explode(':', $extraFields) as $classSpec) {
+            $parts = explode('=', $classSpec);
+            $fieldSpec = $parts[0];
+            $prefix = $parts[1] ?? '';
+
+            $field = substr($fieldSpec, 0, 3);
+            $subfields = str_split(substr($fieldSpec, 3));
+            $fields = $this->record->getFieldsSubfields($field, $subfields);
+            if (!$fields) {
+                continue;
+            }
+            if ($prefix) {
+                $fields = array_map(
+                    function ($s) use ($prefix) {
+                        return "$prefix $s";
+                    },
+                    $fields
+                );
+            }
+            $result = [
+                ...$result,
+                ...$fields
+            ];
+        }
+
+        return $result;
     }
 }
