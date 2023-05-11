@@ -214,7 +214,10 @@ class Marc extends \RecordManager\Base\Record\Marc
      * @param Database $db Database connection. Omit to avoid database lookups for
      *                     related records.
      *
-     * @return array<string, string|array<int, string>>
+     * @return array<string, mixed>
+     *
+     * @psalm-suppress DuplicateArrayKey
+     * @psalm-suppress NoValue
      */
     public function toSolrArray(Database $db = null)
     {
@@ -407,7 +410,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         // Extra classifications
         if ($extraClassifications = $this->getExtraClassifications()) {
             $data['classification_txt_mv'] = [
-                ...($data['classification_txt_mv'] ?? []),
+                ...(array)($data['classification_txt_mv'] ?? []),
                 ...$extraClassifications,
             ];
         }
@@ -419,7 +422,7 @@ class Marc extends \RecordManager\Base\Record\Marc
 
         // Original Study Number
         $data['ctrlnum'] = [
-            ...$data['ctrlnum'],
+            ...(array)$data['ctrlnum'],
             ...$this->getFieldsSubfields([[MarcHandler::GET_NORMAL, '036', ['a']]])
         ];
 
@@ -759,9 +762,9 @@ class Marc extends \RecordManager\Base\Record\Marc
                 return preg_replace('/\s+/', ' ', $s);
             },
             [
-                ...$primaryAuthors['names'],
-                ...$secondaryAuthors['names'],
-                ...$corporateAuthors['names']
+                ...(array)$primaryAuthors['names'],
+                ...(array)$secondaryAuthors['names'],
+                ...(array)$corporateAuthors['names']
             ]
         );
 
@@ -1055,6 +1058,8 @@ class Marc extends \RecordManager\Base\Record\Marc
      *                                     component part set
      *
      * @return int Count of records merged
+     *
+     * @psalm-suppress DuplicateArrayKey
      */
     public function mergeComponentParts($componentParts, &$changeDate)
     {
@@ -1076,22 +1081,22 @@ class Marc extends \RecordManager\Base\Record\Marc
             if ($data['textIncipits']) {
                 $this->extraFields['allfields'] = [
                     ...(array)($this->extraFields['allfields'] ?? []),
-                    ...$data['textIncipits']
+                    ...(array)$data['textIncipits']
                 ];
                 // Text incipit is treated as an alternative title
                 $this->extraFields['title_alt'] = [
                     ...(array)($this->extraFields['title_alt'] ?? []),
-                    ...$data['textIncipits']
+                    ...(array)$data['textIncipits']
                 ];
             }
             if ($data['varyingTitles']) {
                 $this->extraFields['allfields'] = [
                     ...(array)($this->extraFields['allfields'] ?? []),
-                    ...$data['varyingTitles']
+                    ...(array)$data['varyingTitles']
                 ];
                 $this->extraFields['title_alt'] = [
                     ...(array)($this->extraFields['title_alt'] ?? []),
-                    ...$data['varyingTitles']
+                    ...(array)$data['varyingTitles']
                 ];
             }
 
@@ -2613,6 +2618,8 @@ class Marc extends \RecordManager\Base\Record\Marc
      * Get extra classifications based on driver params
      *
      * @return array
+     *
+     * @psalm-suppress DuplicateArrayKey
      */
     protected function getExtraClassifications(): array
     {
@@ -2632,6 +2639,8 @@ class Marc extends \RecordManager\Base\Record\Marc
             if (!$fields) {
                 continue;
             }
+            // Make sure there is a single space between subfields:
+            $fields = preg_replace('/\s{2,}/', ' ', $fields);
             if ($prefix) {
                 $fields = array_map(
                     function ($s) use ($prefix) {

@@ -135,7 +135,7 @@ class Lido extends \RecordManager\Base\Record\Lido
      * @param Database $db Database connection. Omit to avoid database lookups for
      *                     related records.
      *
-     * @return array<string, string|array<int, string>>
+     * @return array<string, mixed>
      */
     public function toSolrArray(Database $db = null)
     {
@@ -366,7 +366,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                         ...preg_split(
                             '/[\/;]/',
                             $displayPlace
-                        )
+                        ) ?: []
                     ];
                 }
             }
@@ -442,7 +442,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                             ...preg_split(
                                 '/[\/;]/',
                                 (string)$placeNode->displayPlace
-                            )
+                            ) ?: []
                         ];
                     }
                 }
