@@ -8708,5 +8708,8 @@ sein = smn
 seko = sms
 vk = sgn
 
+; Helmet custom ones (FINNA-376)
+dpe = dpe
+
 ; Ignore invalid codes
 ##default =
