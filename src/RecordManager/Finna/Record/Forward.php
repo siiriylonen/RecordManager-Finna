@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Forward record class
  *
@@ -26,6 +27,7 @@
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
+
 namespace RecordManager\Finna\Record;
 
 use RecordManager\Base\Database\DatabaseInterface as Database;
@@ -189,12 +191,12 @@ class Forward extends \RecordManager\Base\Record\Forward
                     'UTF-8'
                 );
                 switch ($laji) {
-                case 'lyhyt':
-                    return 'VideoShort';
-                case 'pitkä':
-                    return 'VideoFeature';
-                case 'kooste':
-                    return 'VideoCompilation';
+                    case 'lyhyt':
+                        return 'VideoShort';
+                    case 'pitkä':
+                        return 'VideoFeature';
+                    case 'kooste':
+                        return 'VideoCompilation';
                 }
             }
         }
@@ -212,7 +214,9 @@ class Forward extends \RecordManager\Base\Record\Forward
             return [];
         }
         foreach ($this->getMainElement()->HasAgent as $agent) {
-            if ($agent->AgentIdentifier && $agent->AgentIdentifier->IDTypeName
+            if (
+                $agent->AgentIdentifier
+                && $agent->AgentIdentifier->IDTypeName
                 && $agent->AgentIdentifier->IDValue
                 && (string)$agent->AgentIdentifier->IDTypeName == $parentIdType
             ) {
@@ -390,10 +394,7 @@ class Forward extends \RecordManager\Base\Record\Forward
         $relator = $this->metadataUtils->normalizeRelator((string)$activity);
         if (in_array($relator, ['a00', 'a08', 'a99', 'd99', 'e04', 'e99'])) {
             $relator = null;
-            foreach (
-                ['finna-activity-text', 'tehtava', 'elokuva-elotekija-tehtava']
-                as $field
-            ) {
+            foreach (['finna-activity-text', 'tehtava', 'elokuva-elotekija-tehtava'] as $field) {
                 if (!empty($activity->attributes()->{$field})) {
                     $label = trim((string)$activity->attributes()->{$field});
                     if (!in_array($label, ['', '"'])) {
@@ -536,7 +537,8 @@ class Forward extends \RecordManager\Base\Record\Forward
     protected function getBuilding()
     {
         foreach ($this->getMainElement()->ProductionEvent as $event) {
-            if (null !== $event->attributes()->{'elonet-tag'}
+            if (
+                null !== $event->attributes()->{'elonet-tag'}
                 && (string)$event->attributes()->{'elonet-tag'} === 'skftunniste'
             ) {
                 return ['skf'];

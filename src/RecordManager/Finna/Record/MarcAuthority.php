@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Marc authority Record Class
  *
@@ -25,6 +26,7 @@
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
+
 namespace RecordManager\Finna\Record;
 
 use RecordManager\Base\Database\DatabaseInterface as Database;
@@ -82,7 +84,7 @@ class MarcAuthority extends \RecordManager\Base\Record\MarcAuthority
     {
         $result = [];
         $defaultFields = ['400', '410', '500', '510'];
-        foreach ([...$defaultFields, ...$additional]as $code) {
+        foreach ([...$defaultFields, ...$additional] as $code) {
             $subfields = in_array($code, ['400', '500'])
                 ? ['a', 'b', 'c']
                 : ['a', 'b'];

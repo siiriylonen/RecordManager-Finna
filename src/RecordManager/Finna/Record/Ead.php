@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Ead record class
  *
@@ -25,6 +26,7 @@
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
+
 namespace RecordManager\Finna\Record;
 
 use RecordManager\Base\Database\DatabaseInterface as Database;
@@ -120,11 +122,9 @@ class Ead extends \RecordManager\Base\Record\Ead
             }
             if ($yearRange) {
                 $len = strlen($yearRange);
-                foreach (
-                    ['title_full', 'title_sort', 'title', 'title_short']
-                    as $field
-                ) {
-                    if (substr($data[$field], -$len) != $yearRange
+                foreach (['title_full', 'title_sort', 'title', 'title_short'] as $field) {
+                    if (
+                        substr($data[$field], -$len) != $yearRange
                         && substr($data[$field], -$len - 2) != "($yearRange)"
                     ) {
                         $data[$field] .= " ($yearRange)";
@@ -143,8 +143,7 @@ class Ead extends \RecordManager\Base\Record\Ead
 
         // Digitized?
         if ($doc->did->daogrp) {
-            if (in_array($data['format'], ['collection', 'series', 'fonds', 'item'])
-            ) {
+            if (in_array($data['format'], ['collection', 'series', 'fonds', 'item'])) {
                 $data['format'] = 'digitized_' . $data['format'];
             }
         }
@@ -224,7 +223,8 @@ class Ead extends \RecordManager\Base\Record\Ead
             if (strstr($restrict, 'No known copyright restrictions')) {
                 return ['No known copyright restrictions'];
             }
-            if (strncasecmp($restrict, 'CC', 2) === 0
+            if (
+                strncasecmp($restrict, 'CC', 2) === 0
                 || strncasecmp($restrict, 'Public', 6) === 0
                 || strncasecmp($restrict, 'Julkinen', 8) === 0
             ) {
