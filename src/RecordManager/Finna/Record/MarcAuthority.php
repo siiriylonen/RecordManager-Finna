@@ -68,7 +68,7 @@ class MarcAuthority extends \RecordManager\Base\Record\MarcAuthority
         $data['allfields'][] = $this->getHeading();
         $data['allfields'] = [
             ...(array)$data['allfields'],
-            ...$this->getAlternativeNames()
+            ...$this->getAlternativeNames(),
         ];
         return $data;
     }

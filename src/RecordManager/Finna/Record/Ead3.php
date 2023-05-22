@@ -679,7 +679,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
     {
         $noSubtitleFormats = [
             $this->fondsType,
-            $this->collectionType
+            $this->collectionType,
         ];
         if (in_array($this->getFormat(), $noSubtitleFormats)) {
             return '';
@@ -750,7 +750,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                 } else {
                     foreach (explode(', ', (string)$unitdate) as $single) {
                         $date = str_replace('-', '/', $single);
-                        if (false === strpos($date, '/')) {
+                        if (!str_contains($date, '/')) {
                             $date = "$date/$date";
                         }
                         $result[] = $this->parseDateRange($date);
@@ -773,7 +773,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
      */
     protected function parseDateRange($input)
     {
-        if (!$input || $input == '-' || false === strpos($input, '/')) {
+        if (!$input || $input == '-' || !str_contains($input, '/')) {
             return null;
         }
 

@@ -42,7 +42,7 @@ use RecordManager\Finna\Record\Marc;
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
-class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
+class MarcTest extends \RecordManagerTest\Base\Record\RecordTestBase
 {
     /**
      * Test MARC Record handling
@@ -57,13 +57,13 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             [
                 '__unit_test_no_source__' => [
                     'authority' => [
-                        '*' => 'testauth'
+                        '*' => 'testauth',
                     ],
-                ]
+                ],
             ],
             'Base',
             [
-                $this->createMock(\RecordManager\Base\Record\PluginManager::class)
+                $this->createMock(\RecordManager\Base\Record\PluginManager::class),
             ]
         );
         $fields = $record->toSolrArray();
@@ -274,7 +274,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             'format_ext_str_mv' => 'Book',
             'topic_id_str_mv' => [],
             'description' => 'Summary field',
-            'mime_type_str_mv' => []
+            'mime_type_str_mv' => [],
         ];
 
         $this->compareArray($expected, $fields, 'toSolrArray');
@@ -305,7 +305,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
                     ],
                 ],
                 'titlesAltScript' => [],
-            ]
+            ],
         ];
 
         $this->compareArray($expected, $keys, 'getWorkIdentificationData');
@@ -329,7 +329,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             [],
             'Base',
             [
-                $this->createMock(\RecordManager\Base\Record\PluginManager::class)
+                $this->createMock(\RecordManager\Base\Record\PluginManager::class),
             ]
         );
         $fields = $record->toSolrArray();
@@ -497,7 +497,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             [],
             'Base',
             [
-                $this->createMock(\RecordManager\Base\Record\PluginManager::class)
+                $this->createMock(\RecordManager\Base\Record\PluginManager::class),
             ]
         );
         $fields = $record->toSolrArray();
@@ -677,7 +677,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             [],
             'Finna',
             [
-                $this->createMock(\RecordManager\Base\Record\PluginManager::class)
+                $this->createMock(\RecordManager\Base\Record\PluginManager::class),
             ]
         );
         $fields = $record->toSolrArray();
@@ -701,7 +701,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
                 'AMK-opinnäytetyö',
                 'Second Sample Program',
                 'testaus',
-                'AMK-opinnäytetyö'
+                'AMK-opinnäytetyö',
             ],
             'language' => [
                 'fin',
@@ -819,7 +819,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             [],
             'Finna',
             [
-                $this->createMock(\RecordManager\Base\Record\PluginManager::class)
+                $this->createMock(\RecordManager\Base\Record\PluginManager::class),
             ]
         );
         $fields = $record->toSolrArray();
@@ -959,7 +959,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             [],
             'Finna',
             [
-                $this->createMock(\RecordManager\Base\Record\PluginManager::class)
+                $this->createMock(\RecordManager\Base\Record\PluginManager::class),
             ]
         );
         $fields = $record->toSolrArray();
@@ -1075,7 +1075,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             ],
             'Finna',
             [
-                $this->createMock(\RecordManager\Base\Record\PluginManager::class)
+                $this->createMock(\RecordManager\Base\Record\PluginManager::class),
             ]
         );
         $fields = $record->toSolrArray();
@@ -1144,7 +1144,7 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             [],
             'Finna',
             [
-                $this->createMock(\RecordManager\Base\Record\PluginManager::class)
+                $this->createMock(\RecordManager\Base\Record\PluginManager::class),
             ]
         );
         $fields = $record->toSolrArray();
@@ -1175,14 +1175,14 @@ class MarcTest extends \RecordManagerTest\Base\Record\RecordTest
             [],
             'Finna',
             [
-                $this->createMock(\RecordManager\Base\Record\PluginManager::class)
+                $this->createMock(\RecordManager\Base\Record\PluginManager::class),
             ]
         );
         $fields = $record->toSolrArray();
         $this->assertEquals(
             [
                 'audio/x-wav',
-                'application/pdf'
+                'application/pdf',
             ],
             $fields['mime_type_str_mv']
         );

@@ -108,7 +108,7 @@ class Lido extends \RecordManager\Base\Record\Lido
      * @var array
      */
     protected $relatedWorkRelationTypes = [
-        'Kokoelma', 'kuuluu kokoelmaan', 'kokoelma'
+        'Kokoelma', 'kuuluu kokoelmaan', 'kokoelma',
     ];
 
     /**
@@ -120,7 +120,7 @@ class Lido extends \RecordManager\Base\Record\Lido
     protected $relatedWorkRelationTypesExtended = [
         'Kokoelma', 'kokoelma', 'kuuluu kokoelmaan', 'Arkisto', 'arkisto',
         'Alakokoelma', 'alakokoelma', 'Erityiskokoelma', 'erityiskokoelma',
-        'Hankintaerä', 'hankintaerä'
+        'Hankintaerä', 'hankintaerä',
     ];
 
     /**
@@ -224,7 +224,7 @@ class Lido extends \RecordManager\Base\Record\Lido
         } else {
             $dateSources = [
                 'suunnittelu' => 'design', 'tuotanto' => 'production',
-                'kuvaus' => 'photography'
+                'kuvaus' => 'photography',
             ];
             foreach ($dateSources as $dateSource => $field) {
                 $daterange = $this->getDateRange($dateSource);
@@ -339,7 +339,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             if ('' !== $mainPlace && '' !== $subLocation) {
                 $subjectLocations = [
                     ...$subjectLocations,
-                    ...$this->splitAddresses(trim($mainPlace), trim($subLocation))
+                    ...$this->splitAddresses(trim($mainPlace), trim($subLocation)),
                 ];
                 continue;
             }
@@ -361,7 +361,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                         ...preg_split(
                             '/[\/;]/',
                             $displayPlace
-                        ) ?: []
+                        ) ?: [],
                     ];
                 }
             }
@@ -396,12 +396,12 @@ class Lido extends \RecordManager\Base\Record\Lido
                         if ($mainPlace && !$subLocation) {
                             $locations = [
                                 ...$locations,
-                                ...explode('/', $mainPlace)
+                                ...explode('/', $mainPlace),
                             ];
                         } else {
                             $locations = [
                                 ...$locations,
-                                ...$this->splitAddresses($mainPlace, $subLocation)
+                                ...$this->splitAddresses($mainPlace, $subLocation),
                             ];
                         }
                     } elseif (!empty($placeNode->place->partOfPlace)) {
@@ -440,7 +440,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                             ...preg_split(
                                 '/[\/;]/',
                                 (string)$placeNode->displayPlace
-                            ) ?: []
+                            ) ?: [],
                         ];
                     }
                 }
@@ -461,7 +461,7 @@ class Lido extends \RecordManager\Base\Record\Lido
 
         return [
             'primary' => $this->processLocations($subjectLocations),
-            'secondary' => $this->processLocations($accepted)
+            'secondary' => $this->processLocations($accepted),
         ];
     }
 
@@ -1131,7 +1131,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             'rautakausi' => ['-0500-01-01T00:00:00Z','1299-12-31T23:59:59Z'],
             'keskiaika' => ['1300-01-01T00:00:00Z','1550-12-31T23:59:59Z'],
             'ajoittamaton' => null,
-            'tuntematon' => null
+            'tuntematon' => null,
         ];
         $dmyToDmyPeriods = '/(\d\d?)\s*.\s*(\d\d?)\s*.\s*(\d\d\d\d)\s*'
             . '-\s*(\d\d?)\s*.\s*(\d\d?)\s*.\s*(\d\d\d\d)/';
@@ -1185,7 +1185,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                 'syyskuu' => '09',
                 'lokakuu' => '10',
                 'marraskuu' => '11',
-                'joulukuu' => '12'
+                'joulukuu' => '12',
         ];
 
         $imprecise = false;
@@ -1632,11 +1632,11 @@ class Lido extends \RecordManager\Base\Record\Lido
         // Check for image links and add a work type for images
         $imageTypes = [
             'Kuva', 'Kuva, Valokuva', 'Valokuva', 'dia', 'kuva', 'negatiivi',
-            'photograph', 'valoku', 'valokuva', 'valokuvat'
+            'photograph', 'valoku', 'valokuva', 'valokuvat',
         ];
         $imageResourceTypes = [
             '', 'image_thumb', 'thumb', 'medium', 'image_large', 'large', 'zoomview',
-            'image_master', 'image_original'
+            'image_master', 'image_original',
         ];
         if (empty(array_intersect($imageTypes, $result))) {
             foreach ($this->getResourceSetNodes() as $set) {
@@ -1728,7 +1728,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                 if ($extents) {
                     $extents = implode(', ', $extents);
                     foreach ($setResults as &$current) {
-                        if (strpos($current, $extents) === false) {
+                        if (!str_contains($current, $extents)) {
                             $current .= " ($extents)";
                         }
                     }

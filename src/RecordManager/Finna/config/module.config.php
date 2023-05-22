@@ -25,6 +25,7 @@
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
+
 namespace RecordManager\Finna\Module\Config;
 
 return [
@@ -72,7 +73,7 @@ return [
             \RecordManager\Finna\Utils\FieldMapper::class => \RecordManager\Base\Utils\FieldMapperFactory::class,
         ],
         'aliases' => [
-            \RecordManager\Base\Utils\FieldMapper::class => \RecordManager\Finna\Utils\FieldMapper::class
+            \RecordManager\Base\Utils\FieldMapper::class => \RecordManager\Finna\Utils\FieldMapper::class,
         ],
     ],
 ];

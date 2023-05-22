@@ -409,7 +409,7 @@ class Ead extends \RecordManager\Base\Record\Ead
                 $result = [
                     'url' => $url,
                     'desc' => '',
-                    'source' => $this->source
+                    'source' => $this->source,
                 ];
                 $mimeType = $this->getLinkMimeType($url);
                 if ($mimeType) {

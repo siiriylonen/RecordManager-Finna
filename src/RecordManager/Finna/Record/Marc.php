@@ -71,7 +71,7 @@ class Marc extends \RecordManager\Base\Record\Marc
      * @var array
      */
     protected $illustrationStrings = [
-        'ill.', 'illus.', 'kuv.', 'kuvitettu', 'illustrated'
+        'ill.', 'illus.', 'kuv.', 'kuvitettu', 'illustrated',
     ];
 
     /**
@@ -246,7 +246,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         $data['author2_id_str_mv'] = [
             ...$this->addNamespaceToAuthorityIds($primaryAuthors['ids'], 'author'),
             ...$this->addNamespaceToAuthorityIds($secondaryAuthors['ids'], 'author'),
-            ...$this->addNamespaceToAuthorityIds($corporateAuthors['ids'], 'author')
+            ...$this->addNamespaceToAuthorityIds($corporateAuthors['ids'], 'author'),
         ];
         $data['author2_id_role_str_mv'] = [
             ...$this->addNamespaceToAuthorityIds(
@@ -260,7 +260,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             ...$this->addNamespaceToAuthorityIds(
                 $corporateAuthors['idRoles'],
                 'author'
-            )
+            ),
         ];
 
         if (isset($data['publishDate'])) {
@@ -276,7 +276,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         $data['publication_place_txt_mv'] = $this->metadataUtils->arrayTrim(
             $this->getFieldsSubfields(
                 [
-                    [MarcHandler::GET_NORMAL, '260', ['a']]
+                    [MarcHandler::GET_NORMAL, '260', ['a']],
                 ]
             ),
             ' []'
@@ -305,7 +305,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                     [MarcHandler::GET_BOTH, '979', ['d']],
                     [MarcHandler::GET_BOTH, '900', ['a']],
                     [MarcHandler::GET_BOTH, '910', ['a', 'b']],
-                    [MarcHandler::GET_BOTH, '911', ['a', 'e']]
+                    [MarcHandler::GET_BOTH, '911', ['a', 'e']],
                 ],
                 false,
                 true,
@@ -323,7 +323,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             $ids = $this->getSubfieldsArray($field, ['l']);
             $data['author2_id_str_mv'] = [
                 ...($data['author2_id_str_mv'] ?? []),
-                ...$this->addNamespaceToAuthorityIds($ids, 'author')
+                ...$this->addNamespaceToAuthorityIds($ids, 'author'),
             ];
         }
 
@@ -435,7 +435,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         // Original Study Number
         $data['ctrlnum'] = [
             ...(array)$data['ctrlnum'],
-            ...$this->getFieldsSubfields([[MarcHandler::GET_NORMAL, '036', ['a']]])
+            ...$this->getFieldsSubfields([[MarcHandler::GET_NORMAL, '036', ['a']]]),
         ];
 
         // Source
@@ -457,7 +457,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                     [MarcHandler::GET_NORMAL, '490', ['x']],
                     [MarcHandler::GET_NORMAL, '730', ['x']],
                     [MarcHandler::GET_NORMAL, '776', ['x']],
-                    [MarcHandler::GET_NORMAL, '830', ['x']]
+                    [MarcHandler::GET_NORMAL, '830', ['x']],
                 ]
             );
         foreach ($data['other_issn_str_mv'] as &$value) {
@@ -495,7 +495,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         $data['holdings_txtP_mv'] = $this->getFieldsSubfields(
             [
                 [MarcHandler::GET_NORMAL, '852', ['a', 'b', 'h', 'z']],
-                [MarcHandler::GET_NORMAL, '952', ['b', 'c', 'o', 'h']]
+                [MarcHandler::GET_NORMAL, '952', ['b', 'c', 'o', 'h']],
             ]
         );
         if (!empty($data['holdings_txtP_mv'])) {
@@ -625,7 +625,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         if ($this->getDriverParam('projectIdIn960', false)) {
             $data['project_id_str_mv'] = $this->getFieldsSubfields(
                 [
-                    [MarcHandler::GET_NORMAL, '960', ['a']]
+                    [MarcHandler::GET_NORMAL, '960', ['a']],
                 ]
             );
         }
@@ -712,7 +712,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                     [
                         [MarcHandler::GET_NORMAL, '080', ['a', 'b']],
                         [MarcHandler::GET_NORMAL, '084', ['a', 'b']],
-                        [MarcHandler::GET_NORMAL, '050', ['a', 'b']]
+                        [MarcHandler::GET_NORMAL, '050', ['a', 'b']],
                     ]
                 )
             )
@@ -734,14 +734,14 @@ class Marc extends \RecordManager\Base\Record\Marc
             'strtoupper',
             $this->getFieldsSubfields(
                 [
-                    [MarcHandler::GET_NORMAL, '050', ['a', 'b']]
+                    [MarcHandler::GET_NORMAL, '050', ['a', 'b']],
                 ]
             )
         );
         if ($lccn) {
             $data['callnumber-raw'] = [
                 ...$data['callnumber-raw'],
-                ...$lccn
+                ...$lccn,
             ];
             if (empty($data['callnumber-sort'])) {
                 // Try to find a valid call number
@@ -779,7 +779,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             [
                 ...(array)$primaryAuthors['names'],
                 ...(array)$secondaryAuthors['names'],
-                ...(array)$corporateAuthors['names']
+                ...(array)$corporateAuthors['names'],
             ]
         );
 
@@ -897,7 +897,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             't2' => 'MSH',
             't3' => 'NAL',
             't5' => 'CanSH',
-            't6' => 'RVM'
+            't6' => 'RVM',
         ];
         $ind2 = $this->record->getIndicator($field, 2);
         if ($src = ($map["t$ind2"] ?? '')) {
@@ -923,7 +923,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         }
         $additionalTitles = $this->getFieldsSubfields(
             [
-                [MarcHandler::GET_NORMAL, '740', ['a']]
+                [MarcHandler::GET_NORMAL, '740', ['a']],
             ]
         );
         $varyingTitles = $this->getFieldsSubfields(
@@ -932,13 +932,13 @@ class Marc extends \RecordManager\Base\Record\Marc
         $authors = $this->getFieldsSubfields(
             [
                 [MarcHandler::GET_NORMAL, '100', ['a', 'e']],
-                [MarcHandler::GET_NORMAL, '110', ['a', 'e']]
+                [MarcHandler::GET_NORMAL, '110', ['a', 'e']],
             ]
         );
         $additionalAuthors = $this->getFieldsSubfields(
             [
                 [MarcHandler::GET_NORMAL, '700', ['a', 'e']],
-                [MarcHandler::GET_NORMAL, '710', ['a', 'e']]
+                [MarcHandler::GET_NORMAL, '710', ['a', 'e']],
             ]
         );
         $authorIds = $this->getFieldsSubfields(
@@ -951,7 +951,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         );
         $durations = $this->getFieldsSubfields(
             [
-                [MarcHandler::GET_NORMAL, '306', ['a']]
+                [MarcHandler::GET_NORMAL, '306', ['a']],
             ]
         );
         $languages = [substr($this->record->getControlField('008'), 35, 3)];
@@ -961,18 +961,18 @@ class Marc extends \RecordManager\Base\Record\Marc
                 ...$this->getFieldsSubfields(
                     [
                         [MarcHandler::GET_NORMAL, '041', ['a']],
-                        [MarcHandler::GET_NORMAL, '041', ['d']]
+                        [MarcHandler::GET_NORMAL, '041', ['d']],
                     ],
                     false,
                     true,
                     true
-                )
+                ),
             ]
         );
         $languages = $this->metadataUtils->normalizeLanguageStrings($languages);
         $originalLanguages = $this->getFieldsSubfields(
             [
-                [MarcHandler::GET_NORMAL, '041', ['h']]
+                [MarcHandler::GET_NORMAL, '041', ['h']],
             ],
             false,
             true,
@@ -982,7 +982,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             = $this->metadataUtils->normalizeLanguageStrings($originalLanguages);
         $subtitleLanguages = $this->getFieldsSubfields(
             [
-                [MarcHandler::GET_NORMAL, '041', ['j']]
+                [MarcHandler::GET_NORMAL, '041', ['j']],
             ],
             false,
             true,
@@ -1097,30 +1097,30 @@ class Marc extends \RecordManager\Base\Record\Marc
             if ($data['textIncipits']) {
                 $this->extraFields['allfields'] = [
                     ...(array)($this->extraFields['allfields'] ?? []),
-                    ...(array)$data['textIncipits']
+                    ...(array)$data['textIncipits'],
                 ];
                 // Text incipit is treated as an alternative title
                 $this->extraFields['title_alt'] = [
                     ...(array)($this->extraFields['title_alt'] ?? []),
-                    ...(array)$data['textIncipits']
+                    ...(array)$data['textIncipits'],
                 ];
             }
             if ($data['varyingTitles']) {
                 $this->extraFields['allfields'] = [
                     ...(array)($this->extraFields['allfields'] ?? []),
-                    ...(array)$data['varyingTitles']
+                    ...(array)$data['varyingTitles'],
                 ];
                 $this->extraFields['title_alt'] = [
                     ...(array)($this->extraFields['title_alt'] ?? []),
-                    ...(array)$data['varyingTitles']
+                    ...(array)$data['varyingTitles'],
                 ];
             }
 
             $id = $componentPart['_id'];
             $newField = [
                 'subfields' => [
-                    ['a' => $id]
-                ]
+                    ['a' => $id],
+                ],
             ];
 
             if ($data['title']) {
@@ -1546,8 +1546,8 @@ class Marc extends \RecordManager\Base\Record\Marc
         }
 
         switch (strtoupper($bibliographicLevel)) {
-            // Monograph
             case 'M':
+                // Monograph
                 if ($online) {
                     return 'eBook';
                 } else {
@@ -1555,8 +1555,8 @@ class Marc extends \RecordManager\Base\Record\Marc
                 }
                 // @phpstan-ignore-next-line
                 break;
-            // Serial
             case 'S':
+                // Serial
                 // Look in 008 to determine what type of Continuing Resource
                 $formatCode = strtoupper(substr($field008, 21, 1));
                 switch ($formatCode) {
@@ -1672,15 +1672,15 @@ class Marc extends \RecordManager\Base\Record\Marc
                 [MarcHandler::GET_ALT, '245', ['a', 'b']],
                 [MarcHandler::GET_BOTH, '130', [
                     'a', 'd', 'f', 'g', 'h', 'k', 'l', 'n', 'p', 'r', 's',
-                    't'
+                    't',
                 ]],
                 [MarcHandler::GET_BOTH, '240', [
                     'a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p',
-                    'r', 's'
+                    'r', 's',
                 ]],
                 [MarcHandler::GET_BOTH, '243', [
                     'a', 'd', 'f', 'g', 'h', 'k', 'l', 'm', 'n', 'o', 'p',
-                    'r', 's'
+                    'r', 's',
                 ]],
                 [MarcHandler::GET_BOTH, '246', ['a', 'b', 'n', 'p']],
                 // Use only 700 fields that contain subfield 't'
@@ -1689,13 +1689,13 @@ class Marc extends \RecordManager\Base\Record\Marc
                     '700',
                     [
                         't', 'm', 'r', 'h', 'i', 'g', 'n', 'p', 's', 'l',
-                        'o', 'k'
+                        'o', 'k',
                     ],
-                    ['t']
+                    ['t'],
                 ],
                 [MarcHandler::GET_BOTH, '730', [
                     'a', 'd', 'f', 'g', 'h', 'i', 'k', 'l', 'm', 'n', 'o',
-                    'p', 'r', 's', 't'
+                    'p', 'r', 's', 't',
                 ]],
                 [MarcHandler::GET_BOTH, '740', ['a']],
                 // 979b = component part title
@@ -1711,7 +1711,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             ...array_map(
                 [$this->metadataUtils, 'stripTrailingPunctuation'],
                 $this->record->getFieldsSubfields('505', ['t'], null)
-            )
+            ),
         ];
 
         return array_values(array_unique($altTitles));
@@ -1957,7 +1957,7 @@ class Marc extends \RecordManager\Base\Record\Marc
     protected function getAllFields(): array
     {
         $fieldFilter = [
-            '300' => 1, '336' => 1, '337' => 1, '338' => 1
+            '300' => 1, '336' => 1, '337' => 1, '338' => 1,
         ];
         $excludedSubfields = [
             '015' => ['q', 'z', '2', '6', '8'],
@@ -1966,7 +1966,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             '031' => [
                 'a', 'b', 'c', 'd', 'e', 'g', 'm',
                 'n', 'o', 'p', 'q', 'r', 's', 'u',
-                'y', 'z', '2', '6', '8'
+                'y', 'z', '2', '6', '8',
             ],
             '650' => ['0', '2', '6', '8'],
             '100' => ['0', '4'],
@@ -1975,12 +1975,12 @@ class Marc extends \RecordManager\Base\Record\Marc
             '711' => ['0', '4'],
             '773' => [
                 '0', '4', '6', '7', '8', 'g', 'q',
-                'w'
+                'w',
             ],
             '787' => ['i'],
             // Koha serial enumerations
             '952' => ['a', 'b', 'c', 'o'],
-            '979' => ['0', 'a', 'f']
+            '979' => ['0', 'a', 'f'],
         ];
         $allFields = [];
         // Include ISBNs, also normalized if possible
@@ -2013,7 +2013,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                         '940',
                         '952',
                         // Component parts:
-                        '979'
+                        '979',
                     ]
                 )
             ) {
@@ -2094,7 +2094,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         $result = parent::getEraFacets();
         $result = [
             ...$result,
-            ...$this->getAdditionalEraFields()
+            ...$this->getAdditionalEraFields(),
         ];
         return $result;
     }
@@ -2109,7 +2109,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         $result = parent::getEras();
         $result = [
             ...$result,
-            ...$this->getAdditionalEraFields()
+            ...$this->getAdditionalEraFields(),
         ];
         return $result;
     }
@@ -2126,7 +2126,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                 ...$this->get653WithSecondInd('4'),
                 ...$this->getFieldsSubfields(
                     [[MarcHandler::GET_NORMAL, '388', ['a']]]
-                )
+                ),
             ];
         }
         return $this->resultCache[__METHOD__];
@@ -2142,7 +2142,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         $result = parent::getGenreFacets();
         $result = [
             ...$result,
-            ...$this->get653WithSecondInd('6')
+            ...$this->get653WithSecondInd('6'),
         ];
         return $result;
     }
@@ -2157,7 +2157,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         $result = parent::getGenres();
         $result = [
             ...$result,
-            ...$this->get653WithSecondInd('6')
+            ...$this->get653WithSecondInd('6'),
         ];
         return $result;
     }
@@ -2173,7 +2173,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         $result = [
             ...$result,
             ...$this->get653WithSecondInd('5'),
-            ...$this->getFieldsSubfields([[MarcHandler::GET_NORMAL, '370', ['g']]])
+            ...$this->getFieldsSubfields([[MarcHandler::GET_NORMAL, '370', ['g']]]),
         ];
         return $result;
     }
@@ -2189,7 +2189,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         $result = [
             ...$result,
             ...$this->get653WithSecondInd('5'),
-            ...$this->getFieldsSubfields([[MarcHandler::GET_NORMAL, '370', ['g']]])
+            ...$this->getFieldsSubfields([[MarcHandler::GET_NORMAL, '370', ['g']]]),
         ];
         return $result;
     }
@@ -2203,7 +2203,7 @@ class Marc extends \RecordManager\Base\Record\Marc
     {
         $result = $this->getFieldsSubfields(
             [
-                [MarcHandler::GET_NORMAL, '651', ['0']]
+                [MarcHandler::GET_NORMAL, '651', ['0']],
             ]
         );
         return $this->addNamespaceToAuthorityIds($result, 'geographic');
@@ -2228,7 +2228,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                 [MarcHandler::GET_NORMAL, '651', ['x']],
                 [MarcHandler::GET_NORMAL, '655', ['x']],
                 [MarcHandler::GET_NORMAL, '385', ['a']],
-                [MarcHandler::GET_NORMAL, '386', ['a']]
+                [MarcHandler::GET_NORMAL, '386', ['a']],
             ],
             false,
             true,
@@ -2236,7 +2236,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         );
         $result = [
             ...$result,
-            ...$this->get653WithSecondInd([' ', '0', '1', '2', '3'])
+            ...$this->get653WithSecondInd([' ', '0', '1', '2', '3']),
         ];
         return $result;
     }
@@ -2255,9 +2255,9 @@ class Marc extends \RecordManager\Base\Record\Marc
                 [
                     [MarcHandler::GET_NORMAL, '385', ['a']],
                     [MarcHandler::GET_NORMAL, '356', ['a']],
-                    [MarcHandler::GET_NORMAL, '567', ['b']]
+                    [MarcHandler::GET_NORMAL, '567', ['b']],
                 ]
-            )
+            ),
         ];
         return $result;
     }
@@ -2275,7 +2275,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                 [MarcHandler::GET_NORMAL, '041', ['a']],
                 [MarcHandler::GET_NORMAL, '041', ['d']],
                 // 979h = component part language
-                [MarcHandler::GET_NORMAL, '979', ['h']]
+                [MarcHandler::GET_NORMAL, '979', ['h']],
             ],
             false,
             true,
@@ -2295,8 +2295,8 @@ class Marc extends \RecordManager\Base\Record\Marc
         $fieldSpecs = [
             '100' => ['a', 'b', 'c', 'd', 'e'],
             '700' => [
-                'a', 'q', 'b', 'c', 'd', 'e'
-            ]
+                'a', 'q', 'b', 'c', 'd', 'e',
+            ],
         ];
         return $this->getAuthorsByRelator(
             $fieldSpecs,
@@ -2315,8 +2315,8 @@ class Marc extends \RecordManager\Base\Record\Marc
         $fieldSpecs = [
             '100' => ['a', 'b', 'c'],
             '700' => [
-                'a', 'q', 'b', 'c'
-            ]
+                'a', 'q', 'b', 'c',
+            ],
         ];
         return $this->getAuthorsByRelator(
             $fieldSpecs,
@@ -2336,8 +2336,8 @@ class Marc extends \RecordManager\Base\Record\Marc
         $fieldSpecs = [
             '100' => ['a', 'b', 'c', 'd', 'e'],
             '700' => [
-                'a', 'q', 'b', 'c', 'd', 'e'
-            ]
+                'a', 'q', 'b', 'c', 'd', 'e',
+            ],
         ];
         return $this->getAuthorsByRelator(
             $fieldSpecs,
@@ -2358,8 +2358,8 @@ class Marc extends \RecordManager\Base\Record\Marc
         $fieldSpecs = [
             '100' => ['a', 'b', 'c'],
             '700' => [
-                'a', 'q', 'b', 'c'
-            ]
+                'a', 'q', 'b', 'c',
+            ],
         ];
         return $this->getAuthorsByRelator(
             $fieldSpecs,
@@ -2381,7 +2381,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             '110' => ['a', 'b', 'e'],
             '111' => ['a', 'b', 'e'],
             '710' => ['a', 'b', 'e'],
-            '711' => ['a', 'b', 'e']
+            '711' => ['a', 'b', 'e'],
         ];
         return $this->getAuthorsByRelator(
             $fieldSpecs,
@@ -2402,7 +2402,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             '110' => ['a', 'b'],
             '111' => ['a', 'b'],
             '710' => ['a', 'b'],
-            '711' => ['a', 'b']
+            '711' => ['a', 'b'],
         ];
         return $this->getAuthorsByRelator(
             $fieldSpecs,
@@ -2472,7 +2472,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             [
                 [MarcHandler::GET_NORMAL, '041', ['h']],
                 // 979i = component part original language
-                [MarcHandler::GET_NORMAL, '979', ['i']]
+                [MarcHandler::GET_NORMAL, '979', ['i']],
             ],
             false,
             true,
@@ -2500,7 +2500,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             [
                 [MarcHandler::GET_NORMAL, '041', ['j']],
                 // 979j = component part subtitle language
-                [MarcHandler::GET_NORMAL, '979', ['j']]
+                [MarcHandler::GET_NORMAL, '979', ['j']],
             ],
             false,
             true,
@@ -2521,9 +2521,9 @@ class Marc extends \RecordManager\Base\Record\Marc
                 [MarcHandler::GET_BOTH, '440', ['a']],
                 [MarcHandler::GET_BOTH, '490', ['a']],
                 [MarcHandler::GET_BOTH, '800', [
-                    'a', 'b', 'c', 'd', 'f', 'p', 'q', 't'
+                    'a', 'b', 'c', 'd', 'f', 'p', 'q', 't',
                 ]],
-                [MarcHandler::GET_BOTH, '830', ['a', 'v', 'n', 'p']]
+                [MarcHandler::GET_BOTH, '830', ['a', 'v', 'n', 'p']],
             ]
         );
     }
@@ -2562,7 +2562,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                 continue;
             }
             $result = [
-                'url' => $url
+                'url' => $url,
             ];
             $text = $this->record->getSubfield($field, 'y');
             if (!$text) {
@@ -2669,7 +2669,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             }
             $result = [
                 ...$result,
-                ...$fields
+                ...$fields,
             ];
         }
 

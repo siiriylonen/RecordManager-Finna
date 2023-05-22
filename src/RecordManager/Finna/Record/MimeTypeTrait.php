@@ -64,7 +64,7 @@ trait MimeTypeTrait
         'medium',
         'square',
         'thumb',
-        'zoomview'
+        'zoomview',
     ];
 
     /**
@@ -87,7 +87,7 @@ trait MimeTypeTrait
         'aspx',
         'asmx',
         'ashx',
-        'swf'
+        'swf',
     ];
 
     /**

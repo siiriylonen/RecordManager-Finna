@@ -65,7 +65,7 @@ trait ForwardRecordTrait
                 $parts[] = [
                     'xml' => $child,
                     'order' => empty($child->Title->PartDesignation->Value)
-                        ? 0 : (int)$child->Title->PartDesignation->Value
+                        ? 0 : (int)$child->Title->PartDesignation->Value,
                 ];
             }
             ++$count;

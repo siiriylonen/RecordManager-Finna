@@ -40,7 +40,7 @@ use RecordManager\Finna\Record\Ead3;
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://github.com/NatLibFi/RecordManager
  */
-class Ead3Test extends \RecordManagerTest\Base\Record\RecordTest
+class Ead3Test extends \RecordManagerTest\Base\Record\RecordTestBase
 {
     /**
      * Test AHAA EAD3 record handling
@@ -301,7 +301,7 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTest
             'never without year range' => [
                 'title' => "Opintokirja. Helsingin yliopisto",
                 'expected' => "Opintokirja. Helsingin yliopisto",
-            ]
+            ],
         ];
 
         $noMatch = [
@@ -389,34 +389,34 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTest
         return [
             [
                 'driverParams' => [
-                    'enrichTitleWithYearRange=no_year_exists'
+                    'enrichTitleWithYearRange=no_year_exists',
                 ],
-                'tests' => $noYear
+                'tests' => $noYear,
             ],
             [
                 'driverParams' => [
-                    'enrichTitleWithYearRange=never'
+                    'enrichTitleWithYearRange=never',
                 ],
-                'tests' => $never
+                'tests' => $never,
             ],
             [
                 'driverParams' => [
-                    'enrichTitleWithYearRange=no_match_exists'
+                    'enrichTitleWithYearRange=no_match_exists',
                 ],
-                'tests' => $noMatch
+                'tests' => $noMatch,
             ],
             [
 
                 'driverParams' => [
-                    'enrichTitleWithYearRange=no_matches_exist'
+                    'enrichTitleWithYearRange=no_matches_exist',
                 ],
-                'tests' => $noMatches
+                'tests' => $noMatches,
             ],
             [
                 'driverParams' => [
-                    'enrichTitleWithYearRange=always'
+                    'enrichTitleWithYearRange=always',
                 ],
-                'tests' => $always
+                'tests' => $always,
             ],
         ];
     }
@@ -445,8 +445,8 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTest
                 Ead3::class,
                 [
                     '__unit_test_no_source__' => [
-                        'driverParams' => $driverParams
-                    ]
+                        'driverParams' => $driverParams,
+                    ],
                 ]
             )->toSolrArray();
             $this->assertEquals($test['expected'], $record['title']);
@@ -719,8 +719,8 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTest
                 'http://www.yso.fi/onto/yso/p105341',
             ],
             'mime_type_str_mv' => [
-                'image/tiff'
-            ]
+                'image/tiff',
+            ],
         ];
 
         $this->assertEquals(

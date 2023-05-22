@@ -108,7 +108,7 @@ class Eaccpf extends \RecordManager\Base\Record\Eaccpf
     protected function parseYear(string $date): ?string
     {
         $year = $this->metadataUtils->extractYear($date);
-        if (strpos($year, 'u') === false) {
+        if (!str_contains($year, 'u')) {
             // Year is not unknown
             return $year;
         }

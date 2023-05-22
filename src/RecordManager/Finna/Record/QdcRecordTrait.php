@@ -235,7 +235,7 @@ trait QdcRecordTrait
                 if (isset($years['startYear'])) {
                     $result[] = [
                         $years['startYear'] . '-01-01T00:00:00Z',
-                        $years['endYear'] . '-12-31T23:59:59Z'
+                        $years['endYear'] . '-12-31T23:59:59Z',
                     ];
                 }
             }

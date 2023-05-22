@@ -59,7 +59,7 @@ class Forward extends \RecordManager\Base\Record\Forward
         'd02', 'a00', 'a01', 'a02', 'a03', 'a05', 'a06', 'a08', 'a09', 'a10', 'a11',
         'a12', 'a13', 'a31', 'a38', 'a43', 'a50', 'a99',
         // Some of these are from Marc
-        'adp', 'aud', 'chr', 'cmm', 'cmp', 'cre', 'dub', 'inv'
+        'adp', 'aud', 'chr', 'cmm', 'cmp', 'cre', 'dub', 'inv',
     ];
 
     /**
@@ -83,7 +83,7 @@ class Forward extends \RecordManager\Base\Record\Forward
         'ppt', 'ren', 'rpt', 'rth', 'rtm', 'res', 'rsp', 'rst', 'rse', 'rpy', 'rsg',
         'rev', 'rbr', 'sce', 'sad', 'scr', 'scl', 'spy', 'std', 'sng', 'sds', 'spk',
         'stm', 'str', 'stl', 'sht', 'ths', 'trl', 'tyd', 'tyg', 'vdg', 'voc', 'wde',
-        'wdc', 'wam'
+        'wdc', 'wam',
     ];
 
     /**
@@ -92,7 +92,7 @@ class Forward extends \RecordManager\Base\Record\Forward
      * @var array
      */
     protected $corporateAuthorRelators = [
-        'e10', 'dst', 'prn', 'fnd', 'lbr'
+        'e10', 'dst', 'prn', 'fnd', 'lbr',
     ];
 
     /**
@@ -144,7 +144,7 @@ class Forward extends \RecordManager\Base\Record\Forward
         $data['author_facet'] = [
             ...(array)($data['author'] ?? []),
             ...(array)($data['author2'] ?? []),
-            ...(array)($data['author_corporate'] ?? [])
+            ...(array)($data['author_corporate'] ?? []),
         ];
 
         $data['format_ext_str_mv'] = (array)$data['format'];
@@ -222,7 +222,7 @@ class Forward extends \RecordManager\Base\Record\Forward
             ) {
                 return [
                     (string)$agent->AgentIdentifier->IDTypeName . '_'
-                    . (string)$agent->AgentIdentifier->IDValue
+                    . (string)$agent->AgentIdentifier->IDValue,
                 ];
             }
         }
@@ -281,7 +281,7 @@ class Forward extends \RecordManager\Base\Record\Forward
         // Make sure directors are first of the primary authors
         $directors = $others = [
             'ids' => [],
-            'idRoles' => []
+            'idRoles' => [],
         ];
 
         foreach ($unsortedPrimaryAuthors['relators'] as $i => $relator) {
@@ -449,7 +449,7 @@ class Forward extends \RecordManager\Base\Record\Forward
         foreach ($this->doc->children() as $record) {
             foreach ($record->ProductionEvent as $event) {
                 $attrs = [
-                    'elokuva-elonet-url', 'elokuva-elonet-materiaali-video-url'
+                    'elokuva-elonet-url', 'elokuva-elonet-materiaali-video-url',
                 ];
                 foreach ($attrs as $attr) {
                     $attributes = $event->ProductionEventType->attributes();
@@ -522,7 +522,7 @@ class Forward extends \RecordManager\Base\Record\Forward
                 $results[] = [
                     'url' => $url,
                     'text' => $description ? $description : $videoType,
-                    'source' => $this->source
+                    'source' => $this->source,
                 ];
             }
         }
@@ -560,7 +560,7 @@ class Forward extends \RecordManager\Base\Record\Forward
                 'elokuva-elotiedonkeruu-henkilotyyppi'
             ),
             ...$this
-                ->getProductionEventAttribute('elokuva-elotiedonkeruu-kuvauspaikka')
+                ->getProductionEventAttribute('elokuva-elotiedonkeruu-kuvauspaikka'),
         ];
         foreach ($categories as $category) {
             $result = [...$result, ...explode(';', $category)];
