@@ -322,7 +322,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         foreach ($this->record->getFields('979') as $field) {
             $ids = $this->getSubfieldsArray($field, ['l']);
             $data['author2_id_str_mv'] = [
-                ...($data['author2_id_str_mv'] ?? []),
+                ...$data['author2_id_str_mv'],
                 ...$this->addNamespaceToAuthorityIds($ids, 'author'),
             ];
         }

@@ -1428,10 +1428,10 @@ class Lido extends \RecordManager\Base\Record\Lido
                 $endDate = $year;
             }
         } elseif (preg_match($ekrToEkr, $input, $matches)) {
-            $startDate = -$matches[1];
-            $endDate = -$matches[2];
+            $startDate = -(int)$matches[1];
+            $endDate = -(int)$matches[2];
         } elseif (preg_match($ekrToJkr, $input, $matches)) {
-            $startDate = -$matches[1];
+            $startDate = -(int)$matches[1];
             $endDate = $matches[2];
         } elseif (preg_match('/(-?\d?\d?\d\d) jälkeen/', $input, $matches)) {
             $year = $matches[1];
