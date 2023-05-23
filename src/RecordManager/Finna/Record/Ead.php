@@ -428,16 +428,14 @@ class Ead extends \RecordManager\Base\Record\Ead
      */
     protected function hasImages()
     {
-        if (isset($this->doc->did->daogrp)) {
-            foreach ($this->doc->did->daogrp as $daogrp) {
-                if (!isset($daogrp->daoloc)) {
-                    continue;
-                }
-                foreach ($daogrp->daoloc as $daoloc) {
-                    $role = $daoloc->attributes()->{'role'};
-                    if (in_array($role, ['image_full', 'image_reference'])) {
-                        return true;
-                    }
+        foreach ($this->doc->did->daogrp ?? [] as $daogrp) {
+            if (!isset($daogrp->daoloc)) {
+                continue;
+            }
+            foreach ($daogrp->daoloc as $daoloc) {
+                $role = $daoloc->attributes()->{'role'};
+                if (in_array($role, ['image_full', 'image_reference'])) {
+                    return true;
                 }
             }
         }

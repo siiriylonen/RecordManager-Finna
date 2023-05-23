@@ -277,7 +277,7 @@ trait QdcRecordTrait
         $result = array_map(
             function ($s) {
                 // Convert lowercase CC rights to uppercase
-                if (strncmp($s, 'cc', 2) === 0) {
+                if (str_starts_with($s, 'cc')) {
                     $s = mb_strtoupper($s, 'UTF-8');
                 }
                 return $s;

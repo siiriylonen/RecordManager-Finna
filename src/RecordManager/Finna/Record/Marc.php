@@ -2051,7 +2051,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             [[MarcHandler::GET_NORMAL, '035', ['a']]]
         );
         foreach ($ebraryLocs as $field) {
-            if (strncmp($field, 'ebr', 3) == 0 && is_numeric(substr($field, 3))) {
+            if (str_starts_with($field, 'ebr') && is_numeric(substr($field, 3))) {
                 if (!in_array('EbraryDynamic', $building)) {
                     $building[] = 'EbraryDynamic';
                 }
@@ -2425,7 +2425,7 @@ class Marc extends \RecordManager\Base\Record\Marc
         // Melinda ID
         foreach ($this->record->getFields('035') as $field) {
             $id = $this->record->getSubfield($field, 'a');
-            if (strncmp('FCC', $id, 3) === 0) {
+            if (str_starts_with($id, 'FCC')) {
                 $idNumber = substr($id, 3);
                 if (ctype_digit($idNumber)) {
                     $result[] = "(FI-MELINDA)$idNumber";

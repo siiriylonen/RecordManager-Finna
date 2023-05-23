@@ -315,7 +315,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                     ) {
                         continue;
                     }
-                    $classification = strtolower($place->placeClassification->term);
+                    $classification = strtolower($place->placeClassification->term ?? '');
                     if (
                         strstr($classification, 'kunta') !== false
                         || strstr($classification, 'kaupunki') !== false
@@ -451,7 +451,7 @@ class Lido extends \RecordManager\Base\Record\Lido
         foreach ($locations as $location) {
             if (str_word_count($location) == 1) {
                 foreach ($subjectLocations as $subjectLocation) {
-                    if (strncmp($subjectLocation, $location, strlen($location)) == 0) {
+                    if (str_starts_with($subjectLocation, $location)) {
                         continue 2;
                     }
                 }
@@ -557,15 +557,8 @@ class Lido extends \RecordManager\Base\Record\Lido
      */
     protected function getUsageRights()
     {
-        $hasValue = isset(
-            $this->doc->lido->administrativeMetadata->resourceWrap->resourceSet
-        );
-        if (!$hasValue) {
-            return [];
-        }
-
         $result = [];
-        foreach ($this->doc->lido->administrativeMetadata->resourceWrap->resourceSet as $set) {
+        foreach ($this->doc->lido->administrativeMetadata->resourceWrap->resourceSet ?? [] as $set) {
             if (isset($set->rightsResource->rightsType->conceptID)) {
                 $result[] = (string)$set->rightsResource->rightsType->conceptID;
             } else {
