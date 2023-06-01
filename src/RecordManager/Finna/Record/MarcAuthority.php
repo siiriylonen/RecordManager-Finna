@@ -60,6 +60,7 @@ class MarcAuthority extends \RecordManager\Base\Record\MarcAuthority
      * @return array<string, mixed>
      *
      * @psalm-suppress DuplicateArrayKey
+     * @psalm-suppress InvalidOperand
      */
     public function toSolrArray(Database $db = null)
     {
@@ -67,8 +68,8 @@ class MarcAuthority extends \RecordManager\Base\Record\MarcAuthority
 
         $data['allfields'][] = $this->getHeading();
         $data['allfields'] = [
-            ...(array)$data['allfields'],
-            ...$this->getAlternativeNames(),
+            ...$data['allfields'],
+            ...$this->getAlternativeNames(['500', '510']),
         ];
         return $data;
     }
@@ -83,7 +84,7 @@ class MarcAuthority extends \RecordManager\Base\Record\MarcAuthority
     public function getAlternativeNames($additional = [])
     {
         $result = [];
-        $defaultFields = ['400', '410', '500', '510'];
+        $defaultFields = ['111', '400', '410', '411'];
         foreach ([...$defaultFields, ...$additional] as $code) {
             $subfields = in_array($code, ['400', '500'])
                 ? ['a', 'b', 'c']
