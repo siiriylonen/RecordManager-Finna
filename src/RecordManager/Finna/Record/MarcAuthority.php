@@ -134,7 +134,8 @@ class MarcAuthority extends \RecordManager\Base\Record\MarcAuthority
     {
         $result = [$this->getID()];
         foreach ($this->record->getFields('024') as $field) {
-            if (($id = $this->record->getSubfield($field, 'a'))
+            if (
+                ($id = $this->record->getSubfield($field, 'a'))
                 && ($source = $this->record->getSubfield($field, '2'))
             ) {
                 if (preg_match('/^https?:/', $id)) {
