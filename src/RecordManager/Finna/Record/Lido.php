@@ -997,7 +997,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             if (empty($gml->Polygon->outerBoundaryIs->LinearRing->coordinates)) {
                 $this->logger->logDebug(
                     'Lido',
-                    "GML Polygon missing outer boundary, record "
+                    'GML Polygon missing outer boundary, record '
                         . "{$this->source}." . $this->getID()
                 );
                 $this->storeWarning('gml polygon missing outer boundary');
@@ -1022,7 +1022,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             if (empty($gml->LineString->coordinates)) {
                 $this->logger->logDebug(
                     'Lido',
-                    "GML LineString missing coordinates, record "
+                    'GML LineString missing coordinates, record '
                         . "{$this->source}." . $this->getID()
                 );
                 $this->storeWarning('gml linestring missing coordinates');
@@ -1042,7 +1042,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                 if (!$coordinates) {
                     $this->logger->logDebug(
                         'Lido',
-                        "Empty pos in GML point, record "
+                        'Empty pos in GML point, record '
                             . "{$this->source}." . $this->getID(),
                         true
                     );
@@ -1058,7 +1058,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                 if (!$coordinates) {
                     $this->logger->logDebug(
                         'Lido',
-                        "Empty coordinates in GML point, record "
+                        'Empty coordinates in GML point, record '
                             . "{$this->source}." . $this->getID(),
                         true
                     );
@@ -1074,7 +1074,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             if (null === $lat || null === $lon) {
                 $this->logger->logDebug(
                     'Lido',
-                    "GML Point does not contain pos or coordinates, record "
+                    'GML Point does not contain pos or coordinates, record '
                         . "{$this->source}." . $this->getID(),
                     true
                 );
