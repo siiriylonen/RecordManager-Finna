@@ -327,25 +327,9 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
             if ('cpfrelation' !== $type) {
                 continue;
             }
-            $role = (string)$relation->attributes()->arcrole;
-            switch ($role) {
-                case '':
-                case 'http://www.rdaregistry.info/Elements/u/P60672':
-                case 'http://www.rdaregistry.info/Elements/u/P60434':
-                    $role = 'aut';
-                    break;
-                case 'http://www.rdaregistry.info/Elements/u/P60429':
-                    $role = 'pht';
-                    break;
-                default:
-                    $role = '';
-            }
-            if ('' === $role) {
-                continue;
-            }
-            $result[] = (string)$relation->attributes()->href;
+            $result[] = trim((string)$relation->attributes()->href);
         }
-        return $result;
+        return array_filter($result);
     }
 
     /**
@@ -356,9 +340,11 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
     public function getCorporateAuthorIds()
     {
         $result = [];
-        foreach ($this->doc->did->origination->name ?? [] as $name) {
-            if (isset($name->attributes()->identifier)) {
-                $result[] = (string)$name->attributes()->identifier;
+        foreach ($this->doc->did->origination ?? [] as $origination) {
+            foreach ($origination->name as $name) {
+                if (isset($name->attributes()->identifier)) {
+                    $result[] = (string)$name->attributes()->identifier;
+                }
             }
         }
         return $result;
