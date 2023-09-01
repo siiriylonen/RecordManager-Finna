@@ -777,7 +777,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
             $dateForm = [
                 'year' => ['uuuu', 'xxxx'],
                 'date' => ['uu', 'xx'],
-                'unit' => ['u', 'x']
+                'unit' => ['u', 'x'],
             ];
             if (!in_array($date, ['open', 'unknown'])) {
                 $parts = explode('-', trim($date));
