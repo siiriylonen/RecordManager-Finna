@@ -774,18 +774,21 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
             $year = str_repeat($defaultYear, 4);
             $month = $defaultMonth;
             $day = $defaultDay;
+            $dateForm = [
+                'year' => ['uuuu', 'xxxx'],
+                'date' => ['uu', 'xx'],
+                'unit' => ['u', 'x']
+            ];
             if (!in_array($date, ['open', 'unknown'])) {
                 $parts = explode('-', trim($date));
-                if ('uuuu' === $parts[0]) {
+                if (in_array(strtolower($parts[0]), $dateForm['year'])) {
                     $unknown = true;
                 }
-                $year = str_replace('u', $defaultYear, $parts[0]);
-
-                if (isset($parts[1]) && $parts[1] !== 'uu') {
+                $year = str_ireplace($dateForm['unit'], $defaultYear, $parts[0]);
+                if (isset($parts[1]) && !in_array(strtolower($parts[1]), $dateForm['date'])) {
                     $month = $parts[1];
                 }
-
-                if (isset($parts[2]) && $parts[2] !== 'uu') {
+                if (isset($parts[2]) && !in_array(strtolower($parts[2]), $dateForm['date'])) {
                     $day = $parts[2];
                 }
             } else {
