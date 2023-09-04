@@ -789,7 +789,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                 if (isset($parts[1]) && !in_array(strtolower($parts[1]), $dateForm['date'])) {
                     $month = $parts[1];
                 }
-                
+
                 if (isset($parts[2]) && !in_array(strtolower($parts[2]), $dateForm['date'])) {
                     $day = $parts[2];
                 }
