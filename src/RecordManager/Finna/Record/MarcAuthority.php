@@ -32,6 +32,8 @@ namespace RecordManager\Finna\Record;
 
 use RecordManager\Base\Database\DatabaseInterface as Database;
 
+use function in_array;
+
 /**
  * Marc authority record class
  *

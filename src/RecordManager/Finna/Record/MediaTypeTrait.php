@@ -31,6 +31,8 @@ namespace RecordManager\Finna\Record;
 
 use League\MimeTypeDetection\GeneratedExtensionToMimeTypeMap;
 
+use function in_array;
+
 /**
  * Media type handling support trait.
  *

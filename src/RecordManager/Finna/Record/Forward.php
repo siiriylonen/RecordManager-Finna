@@ -32,6 +32,10 @@ namespace RecordManager\Finna\Record;
 
 use RecordManager\Base\Database\DatabaseInterface as Database;
 
+use function boolval;
+use function in_array;
+use function is_array;
+
 /**
  * Forward record class
  *
