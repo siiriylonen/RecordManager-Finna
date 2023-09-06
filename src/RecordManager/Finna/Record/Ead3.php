@@ -340,7 +340,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
      *
      * @return array<int, string>
      */
-    public function getCorporateAuthorIds()
+    public function getCorporateAuthorIds(): array
     {
         $result = [];
         foreach ($this->doc->did->origination ?? [] as $origination) {
