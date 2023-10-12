@@ -437,6 +437,15 @@ class Marc extends \RecordManager\Base\Record\Marc
             $data['classification_str_mv'] = $data['classification_txt_mv'];
         }
 
+        // Publisher number
+        foreach ($this->getPublisherNumbers() as $current) {
+            $number = $current['id'];
+            if ('' !== $current['source']) {
+                $number = '(' . $current['source'] . ')' . $number;
+            }
+            $data['ctrlnum'][] = $number;
+        }
+
         // Original Study Number
         $data['ctrlnum'] = [
             ...(array)$data['ctrlnum'],
