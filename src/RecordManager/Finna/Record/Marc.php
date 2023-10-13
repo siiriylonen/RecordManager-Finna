@@ -597,7 +597,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             if ('' !== $current['source']) {
                 $number = '(' . $current['source'] . ')' . $number;
             }
-            $data['pdn_isn_mv'][] = $number;
+            $data['pdn_str_mv'][] = $number;
         }
 
         // Identifiers from component parts (type as a leading string)
