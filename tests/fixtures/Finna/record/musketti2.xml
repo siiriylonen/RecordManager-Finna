@@ -67,6 +67,13 @@
                         </repositoryName>
                         <workID>4878:1</workID>
                     </repositorySet>
+                    <repositorySet>
+                        <repositoryLocation>
+                            <namePlaceSet>
+                                <appellationValue type='prt'>Location, Location, Location</appellationValue>
+                            </namePlaceSet>
+                        </repositoryLocation>
+                    </repositorySet>
                 </repositoryWrap>
                 <objectMeasurementsWrap>
                     <objectMeasurementsSet>

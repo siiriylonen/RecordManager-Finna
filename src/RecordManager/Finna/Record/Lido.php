@@ -614,6 +614,21 @@ class Lido extends \RecordManager\Base\Record\Lido
             }
         }
 
+        foreach (
+            $this->doc->lido->descriptiveMetadata->objectIdentificationWrap->repositoryWrap->repositorySet
+            ?? [] as $set
+        ) {
+            foreach ($set->repositoryLocation->placeID ?? [] as $place) {
+                $types = ['prt', 'kiinteistötunnus'];
+                $attr = $place->attributes();
+                if (in_array($attr->type, $types)) {
+                    $result[] = $getPlaceID($place);
+                }
+                if ($attr->type == 'URI' && $attr->source == 'YSO') {
+                    $result[] = $getPlaceID($place);
+                }
+            }
+        }
         return $result;
     }
 

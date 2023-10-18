@@ -159,12 +159,14 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTestBase
             'geographic_facet' => [
                 'Ruokolahti',
                 'Imatrankoski, Ruokolahti',
+                'Location, Location, Location',
                 'Imatrankoski',
                 'Ruokolahti',
             ],
             'geographic' => [
                 'Ruokolahti',
                 'Imatrankoski, Ruokolahti',
+                'Location, Location, Location',
             ],
             'geographic_id_str_mv' => [],
             'collection' => 'Kansatieteen kuvakokoelma',
@@ -185,6 +187,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTestBase
                 '33,1. Imatra.',
                 'Museoviraston kuva-arkisto/',
                 '4878:1',
+                'Location, Location, Location',
                 'valmistus',
                 'Hintze Harry',
                 '1897',
