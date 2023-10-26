@@ -31,6 +31,11 @@ namespace RecordManager\Base\Record;
 
 use RecordManager\Base\Database\DatabaseInterface as Database;
 
+use function count;
+use function in_array;
+use function is_string;
+use function strlen;
+
 /**
  * Lido record class
  *
@@ -1289,6 +1294,27 @@ class Lido extends AbstractRecord
     }
 
     /**
+     * Return repository locations
+     *
+     * @return array<int, string>
+     */
+    protected function getRepositoryLocations(): array
+    {
+        $result = [];
+        foreach (
+            $this->doc->lido->descriptiveMetadata->objectIdentificationWrap->repositoryWrap->repositorySet
+            ?? [] as $set
+        ) {
+            foreach ($set->repositoryLocation->namePlaceSet ?? [] as $nameSet) {
+                foreach ($nameSet->appellationValue ?? [] as $place) {
+                    $result[] = (string)$place;
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
      * Get main event types
      *
      * @return array
@@ -1373,6 +1399,8 @@ class Lido extends AbstractRecord
         if ($places = $this->getSubjectDisplayPlaces()) {
             $result = [...$result, ...$places];
         }
+        $idPlaces = $this->getRepositoryLocations();
+        $result = [...$result, ...$idPlaces];
         return $result;
     }
 

@@ -34,6 +34,13 @@ use RecordManager\Base\Database\DatabaseInterface as Database;
 use RecordManager\Base\Utils\Logger;
 use RecordManager\Base\Utils\MetadataUtils;
 
+use function boolval;
+use function count;
+use function in_array;
+use function intval;
+use function is_array;
+use function strlen;
+
 /**
  * Lido record class
  *
@@ -51,29 +58,6 @@ class Lido extends \RecordManager\Base\Record\Lido
     use AuthoritySupportTrait;
     use DateSupportTrait;
     use MediaTypeTrait;
-
-    /**
-     * Constructor
-     *
-     * @param array         $config           Main configuration
-     * @param array         $dataSourceConfig Data source settings
-     * @param Logger        $logger           Logger
-     * @param MetadataUtils $metadataUtils    Metadata utilities
-     */
-    public function __construct(
-        array $config,
-        array $dataSourceConfig,
-        Logger $logger,
-        MetadataUtils $metadataUtils
-    ) {
-        parent::__construct(
-            $config,
-            $dataSourceConfig,
-            $logger,
-            $metadataUtils
-        );
-        $this->initMediaTypeTrait($config);
-    }
 
     /**
      * Main event name reflecting the terminology in the particular LIDO records.
@@ -129,6 +113,41 @@ class Lido extends \RecordManager\Base\Record\Lido
      * @var array
      */
     protected $descriptionTypesExcludedFromTitle = ['provenance', 'provenienssi'];
+
+    /**
+     * Location labels which should be excluded when getting location information.
+     *
+     * @var array
+     */
+    protected $excludedLocationLabels;
+
+    /**
+     * Constructor
+     *
+     * @param array         $config           Main configuration
+     * @param array         $dataSourceConfig Data source settings
+     * @param Logger        $logger           Logger
+     * @param MetadataUtils $metadataUtils    Metadata utilities
+     */
+    public function __construct(
+        array $config,
+        array $dataSourceConfig,
+        Logger $logger,
+        MetadataUtils $metadataUtils
+    ) {
+        parent::__construct(
+            $config,
+            $dataSourceConfig,
+            $logger,
+            $metadataUtils
+        );
+        $this->excludedLocationLabels
+            = $this->config['LidoRecord']['excluded_location_labels'] ?? [
+                'tarkempi paikka',
+            ];
+
+        $this->initMediaTypeTrait($config);
+    }
 
     /**
      * Return fields to be indexed in Solr
@@ -264,8 +283,10 @@ class Lido extends \RecordManager\Base\Record\Lido
                 $data['hires_image_str_mv'] = $this->source;
             }
         }
-
-        $data['location_geo'] = $this->getEventPlaceLocations();
+        $data['location_geo'] = [
+            ...$this->getEventPlaceCoordinates(),
+            ...$this->getRepositoryLocationCoordinates(),
+        ];
         $data['center_coords']
             = $this->metadataUtils->getCenterCoordinates($data['location_geo']);
 
@@ -300,69 +321,25 @@ class Lido extends \RecordManager\Base\Record\Lido
      */
     public function getLocations()
     {
-        // Subject places
         $subjectLocations = [];
         foreach ($this->getSubjectNodes() as $subject) {
-            // Try first to find non-hierarchical street address and city.
-            // E.g. Musketti.
-            $mainPlace = '';
-            $subLocation = '';
-            foreach ($subject->subjectPlace as $subjectPlace) {
-                foreach ($subjectPlace->place as $place) {
-                    if (
-                        !isset($place->namePlaceSet->appellationValue)
-                        || !isset($place->placeClassification)
-                    ) {
-                        continue;
-                    }
-                    $classification = strtolower($place->placeClassification->term ?? '');
-                    if (
-                        strstr($classification, 'kunta') !== false
-                        || strstr($classification, 'kaupunki') !== false
-                        || strstr($classification, 'kylä') !== false
-                    ) {
-                        $mainPlace .= ' '
-                            . (string)$place->namePlaceSet->appellationValue;
-                    } elseif (
-                        strstr($classification, 'katuosoite') !== false
-                        || strstr($classification, 'kartano') !== false
-                        || strstr($classification, 'tila') !== false
-                        || strstr($classification, 'talo') !== false
-                        || strstr($classification, 'rakennus') !== false
-                        || strstr($classification, 'alue') !== false
-                    ) {
-                        $subLocation .= ' ' . (string)$place->namePlaceSet
-                            ->appellationValue;
-                    }
+            foreach ($subject->subjectPlace as $placeNode) {
+                if (!empty($placeNode->place->gml)) {
+                    return [];
                 }
-            }
-            if ('' !== $mainPlace && '' !== $subLocation) {
-                $subjectLocations = [
-                    ...$subjectLocations,
-                    ...$this->splitAddresses(trim($mainPlace), trim($subLocation)),
-                ];
-                continue;
-            }
-            // Handle a hierarchical place
-            foreach ($subject->subjectPlace as $subjectPlace) {
-                if ($mainPlace = trim((string)($subjectPlace->place->namePlaceSet->appellationValue ?? ''))) {
-                    $subLocation = $this->getSubLocation($subjectPlace->place);
-                    if (!$subLocation) {
-                        $subjectLocations[] = $mainPlace;
-                    } else {
-                        foreach (preg_split('/( tai |\. )/', $subLocation) as $subPart) {
-                            $subjectLocations[] = "$mainPlace $subPart";
-                        }
-                    }
-                } elseif ($displayPlace = trim((string)($subjectPlace->displayPlace ?? ''))) {
-                    // Split multiple locations separated with a slash
+                if (empty($placeNode->place) && !empty($placeNode->displayPlace)) {
                     $subjectLocations = [
                         ...$subjectLocations,
-                        ...preg_split(
-                            '/[\/;]/',
-                            $displayPlace
-                        ) ?: [],
+                        ...$this->splitLocation((string)$placeNode->displayPlace),
                     ];
+                    continue;
+                }
+                foreach ($placeNode->place as $place) {
+                    if ($result = $this->getHierarchicalLocations($place)) {
+                        foreach ($result as $location) {
+                            $subjectLocations[] = implode(', ', $location);
+                        }
+                    }
                 }
             }
         }
@@ -374,91 +351,61 @@ class Lido extends \RecordManager\Base\Record\Lido
             $subjectLocations
         );
 
-        // Event places
         $locations = [];
         foreach ([$this->getMainEvents(), $this->getPlaceEvents()] as $event) {
             foreach ($this->getEventNodes($event) as $eventNode) {
                 foreach ($eventNode->eventPlace as $placeNode) {
-                    // If there is already gml in the record,
-                    // don't return anything for geocoding
                     if (!empty($placeNode->place->gml)) {
                         return [];
                     }
-                    $hasValue = !empty(
-                        $placeNode->place->namePlaceSet->appellationValue
-                    );
-                    if ($hasValue) {
-                        $mainPlace = (string)$placeNode->place->namePlaceSet
-                            ->appellationValue;
-                        $subLocation = $this->getSubLocation(
-                            $placeNode->place
-                        );
-                        if ($mainPlace && !$subLocation) {
-                            $locations = [
-                                ...$locations,
-                                ...explode('/', $mainPlace),
-                            ];
-                        } else {
-                            $locations = [
-                                ...$locations,
-                                ...$this->splitAddresses($mainPlace, $subLocation),
-                            ];
-                        }
-                    } elseif (!empty($placeNode->place->partOfPlace)) {
-                        // Flat part of place structure (e.g. Musketti)
-                        $haveStreet = false;
-                        foreach ($placeNode->place->partOfPlace as $part) {
-                            if (
-                                isset($part->placeClassification->term)
-                                && $part->placeClassification->term == 'katuosoite'
-                                && !empty($part->namePlaceSet->appellationValue)
-                            ) {
-                                $haveStreet = true;
-                                break;
-                            }
-                        }
-                        $parts = [];
-                        foreach ($placeNode->place->partOfPlace as $p) {
-                            if (
-                                $haveStreet
-                                && isset($p->placeClassification->term)
-                                && ($p->placeClassification->term == 'kaupunginosa'
-                                || $p->placeClassification->term == 'rakennus')
-                            ) {
-                                continue;
-                            }
-                            if (!empty($p->namePlaceSet->appellationValue)) {
-                                $parts[]
-                                    = (string)$p->namePlaceSet->appellationValue;
-                            }
-                        }
-                        $locations[] = implode(' ', $parts);
-                    } elseif (!empty($placeNode->displayPlace)) {
-                        // Split multiple locations separated with a slash
+                    if (empty($placeNode->place) && !empty($placeNode->displayPlace)) {
                         $locations = [
-                            ...$locations,
-                            ...preg_split(
-                                '/[\/;]/',
-                                (string)$placeNode->displayPlace
-                            ) ?: [],
+                            ...$subjectLocations,
+                            ...$this->splitLocation((string)$placeNode->displayPlace),
                         ];
+                        continue;
+                    }
+                    foreach ($placeNode->place as $place) {
+                        if ($result = $this->getHierarchicalLocations($place)) {
+                            foreach ($result as $location) {
+                                $locations[] = implode(', ', $location);
+                            }
+                        }
                     }
                 }
             }
         }
 
+        $displayLocations = [];
+        foreach (
+            $this->doc->lido->descriptiveMetadata->objectIdentificationWrap
+            ->repositoryWrap->repositorySet ?? [] as $set
+        ) {
+            if (empty($set->repositoryLocation)) {
+                continue;
+            }
+            if (!empty($set->repositoryLocation->gml)) {
+                return [];
+            }
+            if ($result = $this->getHierarchicalLocations($set->repositoryLocation)) {
+                foreach ($result as $location) {
+                    $displayLocations[] = implode(', ', $location);
+                }
+            }
+        }
         $accepted = [];
-        foreach ($locations as $location) {
-            if (str_word_count($location) == 1) {
-                foreach ($subjectLocations as $subjectLocation) {
-                    if (str_starts_with($subjectLocation, $location)) {
-                        continue 2;
+        foreach ([$locations, $displayLocations] as $results) {
+            foreach ($results as $location) {
+                if (preg_match_all("/[\pL']+/u", trim($location)) === 1) {
+                    foreach ($subjectLocations as $compare) {
+                        if (str_starts_with($compare, $location)) {
+                            continue 2;
+                        }
                     }
                 }
+                $accepted[] = $location;
             }
-            $accepted[] = $location;
         }
-
         return [
             'primary' => $this->processLocations($subjectLocations),
             'secondary' => $this->processLocations($accepted),
@@ -474,98 +421,6 @@ class Lido extends \RecordManager\Base\Record\Lido
     {
         $authors = $this->getActors($this->getMainEvents(), null, false);
         return $authors ? $authors[0] : '';
-    }
-
-    /**
-     * Process an array of locations
-     *
-     * @param array $locations Location strings
-     *
-     * @return array
-     */
-    protected function processLocations($locations)
-    {
-        $result = [];
-        // Try to split address lists like "Helsinki, Kalevankatu 17, 19" to separate
-        // entries
-        foreach ($locations as $location) {
-            if (
-                preg_match('/(.+?) \d+, *\d+/', $location, $bodyMatches)
-                && preg_match_all('/ (\d+)(,|$)/', $location, $matches)
-            ) {
-                $body = $bodyMatches[1];
-                foreach ($matches[1] as $match) {
-                    $result[] = "$body $match";
-                }
-            } else {
-                $result[] = $location;
-            }
-        }
-        // Try to add versions with additional notes like
-        // "Helsinki Uudenmaankatu 31, katurakennus" removed, but avoid changing e.g.
-        // "Uusimaa, Helsinki, Malmi"
-        foreach ($result as $item) {
-            if (
-                str_word_count($item) > 2
-                && substr_count($item, ',') == 1
-                && preg_match('/(.*[^\s]+\s+\d+),/', $item, $matches)
-            ) {
-                $result[] = $matches[1];
-            }
-        }
-
-        // Remove stuff in parenthesis
-        $result = array_filter($result);
-        $result = array_map(
-            function ($s) {
-                $s = preg_replace('/\(.*/', '', $s);
-                return trim($this->metadataUtils->stripTrailingPunctuation($s));
-            },
-            $result
-        );
-        $result = array_unique($result);
-
-        return $result;
-    }
-
-    /**
-     * Try to split logical sublocation parts
-     *
-     * @param string $mainPlace   Main location
-     * @param string $subLocation Sublocation(s)
-     *
-     * @return array<int, string>
-     */
-    protected function splitAddresses($mainPlace, $subLocation)
-    {
-        $locations = [];
-        if (preg_match('/[^\s]+(\,(?!\s*\d)|\.|\s*\&)\s+[^\s]+/', $subLocation)) {
-            foreach (preg_split('/(\,(?!\s*\d)|\.|\s*\&)\s+/', $subLocation) as $sub) {
-                $locations[] = "$mainPlace $sub";
-            }
-        } else {
-            $locations[] = "$mainPlace $subLocation";
-        }
-        return $locations;
-    }
-
-    /**
-     * Return usage rights if any
-     *
-     * @return array<int, string> ['restricted'] or a more specific id if restricted,
-     * empty array otherwise
-     */
-    protected function getUsageRights()
-    {
-        $result = [];
-        foreach ($this->doc->lido->administrativeMetadata->resourceWrap->resourceSet ?? [] as $set) {
-            if (isset($set->rightsResource->rightsType->conceptID)) {
-                $result[] = (string)$set->rightsResource->rightsType->conceptID;
-            } else {
-                $result[] = 'restricted';
-            }
-        }
-        return $result;
     }
 
     /**
@@ -627,6 +482,232 @@ class Lido extends \RecordManager\Base\Record\Lido
                 if ($attr->type == 'URI' && $attr->source == 'YSO') {
                     $result[] = $getPlaceID($place);
                 }
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * Get hierarchical locations as a multidimensional array.
+     *
+     * @param \SimpleXMLElement $elem Element to check for locations.
+     *
+     * @return array<int, array>
+     */
+    protected function getHierarchicalLocations(\SimpleXMLElement $elem): array
+    {
+        $results = [];
+        $currentElements = [$elem];
+        do {
+            $current = array_shift($currentElements);
+
+            if (!empty($current->namePlaceSet->appellationValue)) {
+                // There can be multiple appellationValues in element, meaning multiple streets etc
+                $values = [];
+                $label = '';
+                foreach ($current->namePlaceSet as $name) {
+                    foreach ($name->appellationValue as $elemValue) {
+                        // We can assume that the label is same in each of different
+                        // appellationvalues under same parent
+                        // If this is not the case, then things are not going ok
+                        $currentLabel = trim((string)$elemValue->attributes()->label);
+                        if (in_array(strtolower($currentLabel), $this->excludedLocationLabels)) {
+                            // Locations with labels like "Torin kulman takaosa" should be skipped
+                            continue;
+                        }
+
+                        if ($label && $label !== $currentLabel) {
+                            // There seems to be different types of appellationValues so skip the new ones
+                            continue;
+                        }
+                        if (!$label) {
+                            $label = $currentLabel;
+                        }
+                        $values[] = trim((string)$elemValue);
+                    }
+                }
+                // If label is empty, use any placeClassification instead
+                if (!$label && !empty($current->placeClassification)) {
+                    $label = trim((string)$current->placeClassification);
+                }
+
+                // If label is still empty and we have multiple values, then only take the first one into account.
+                if (!$label && count($values) > 1) {
+                    $values = [array_shift($values)];
+                }
+                // Check do we create new elements into results or append current value into old results.
+                $newEntries = !$results;
+                foreach ($values as $value) {
+                    if ($newEntries) {
+                        $results[] = [$value];
+                    } else {
+                        foreach ($results as &$result) {
+                            $result[] = $value;
+                        }
+                        unset($result);
+                    }
+                }
+            }
+            // Check for any other partOfPlaces
+            if (!empty($current->partOfPlace)) {
+                foreach ($current->partOfPlace as $place) {
+                    $currentElements[] = $place;
+                }
+            }
+        } while (count($currentElements) > 0);
+        return $results;
+    }
+
+    /**
+     * Get repository location coordinates
+     *
+     * @return array<int, string>
+     */
+    protected function getRepositoryLocationCoordinates(): array
+    {
+        $results = [];
+        foreach (
+            $this->doc->lido->descriptiveMetadata->objectIdentificationWrap
+            ->repositoryWrap->repositorySet ?? [] as $set
+        ) {
+            if (empty($set->repositoryLocation->gml)) {
+                continue;
+            }
+            if ($wkt = $this->convertGmlToWkt($set->repositoryLocation->gml)) {
+                $results[] = $wkt;
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Split a location found from displayPlace element. Excludes all values
+     * found after splitting which has redundancy or has only a single value.
+     * Splitting is done from characters ; or /.
+     *
+     * @param string $location Location to split
+     *
+     * @return array<int, string>
+     */
+    protected function splitLocation(string $location): array
+    {
+        $splitted = preg_split(
+            '/[\/;]/',
+            $location
+        );
+        $results = [];
+        // Some locations might have redundancy, which causes problems.
+        // Try to detect them and discard them from the results
+        foreach ($splitted as $value) {
+            $value = trim($value);
+            $splitted = explode(' ', $value);
+
+            // If there is only one location then it can be really difficult
+            // to really determine where it should be located i.e Pohja or i.e lakes
+            // so in this case, skip the result
+            if (count($splitted) === 1) {
+                continue;
+            }
+            array_walk($splitted, function (&$part) {
+                $part = trim($part, ', ');
+            });
+            // If the result would be something like Mäntyharju, Mäntyharju skip it as it
+            // is too redundant
+            if (count(array_unique($splitted)) !== count($splitted)) {
+                continue;
+            }
+            $results[] = $value;
+        }
+        return $results;
+    }
+
+    /**
+     * Process an array of locations
+     *
+     * @param array $locations Location strings
+     *
+     * @return array
+     */
+    protected function processLocations($locations)
+    {
+        $result = [];
+        // Try to split address lists like "Helsinki, Kalevankatu 17, 19" to separate
+        // entries
+        foreach ($locations as $location) {
+            if (
+                preg_match('/(.+?) \d+, *\d+/', $location, $bodyMatches)
+                && preg_match_all('/ (\d+)(,|$)/', $location, $matches)
+            ) {
+                $body = $bodyMatches[1];
+                foreach ($matches[1] as $match) {
+                    $result[] = "$body $match";
+                }
+            } else {
+                $result[] = $location;
+            }
+        }
+        // Try to add versions with additional notes like
+        // "Helsinki Uudenmaankatu 31, katurakennus" removed, but avoid changing e.g.
+        // "Uusimaa, Helsinki, Malmi"
+        foreach ($result as $item) {
+            if (
+                preg_match_all("/[\pL']+/u", trim($item)) > 2
+                && substr_count($item, ',') == 1
+                && preg_match('/(.*[^\s]+\s+\d+),/', $item, $matches)
+            ) {
+                $result[] = $matches[1];
+            }
+        }
+
+        // Remove stuff in parenthesis
+        $result = array_filter($result);
+        $result = array_map(
+            function ($s) {
+                $s = preg_replace('/\(.*/', '', $s);
+                return trim($this->metadataUtils->stripTrailingPunctuation($s));
+            },
+            $result
+        );
+
+        return array_values(array_unique($result));
+    }
+
+    /**
+     * Try to split logical sublocation parts
+     *
+     * @param string $mainPlace   Main location
+     * @param string $subLocation Sublocation(s)
+     *
+     * @return array<int, string>
+     */
+    protected function splitAddresses($mainPlace, $subLocation)
+    {
+        $locations = [];
+        if (preg_match('/[^\s]+(\,(?!\s*\d)|\.|\s*\&)\s+[^\s]+/', $subLocation)) {
+            foreach (preg_split('/(\,(?!\s*\d)|\.|\s*\&)\s+/', $subLocation) as $sub) {
+                $locations[] = "$mainPlace $sub";
+            }
+        } else {
+            $locations[] = "$mainPlace $subLocation";
+        }
+        return $locations;
+    }
+
+    /**
+     * Return usage rights if any
+     *
+     * @return array<int, string> ['restricted'] or a more specific id if restricted,
+     * empty array otherwise
+     */
+    protected function getUsageRights()
+    {
+        $result = [];
+        foreach ($this->doc->lido->administrativeMetadata->resourceWrap->resourceSet ?? [] as $set) {
+            if (isset($set->rightsResource->rightsType->conceptID)) {
+                $result[] = (string)$set->rightsResource->rightsType->conceptID;
+            } else {
+                $result[] = 'restricted';
             }
         }
         return $result;
@@ -959,13 +1040,13 @@ class Lido extends \RecordManager\Base\Record\Lido
     }
 
     /**
-     * Return the event place locations associated with specified event
+     * Return the event place coordinates associated with specified event
      *
      * @param string|array $event Event type(s) allowed (null = all types)
      *
      * @return array<int, string> WKT
      */
-    protected function getEventPlaceLocations($event = null)
+    protected function getEventPlaceCoordinates($event = null)
     {
         $results = [];
         foreach ($this->getEventNodes($event) as $event) {
@@ -997,7 +1078,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             if (empty($gml->Polygon->outerBoundaryIs->LinearRing->coordinates)) {
                 $this->logger->logDebug(
                     'Lido',
-                    "GML Polygon missing outer boundary, record "
+                    'GML Polygon missing outer boundary, record '
                         . "{$this->source}." . $this->getID()
                 );
                 $this->storeWarning('gml polygon missing outer boundary');
@@ -1022,7 +1103,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             if (empty($gml->LineString->coordinates)) {
                 $this->logger->logDebug(
                     'Lido',
-                    "GML LineString missing coordinates, record "
+                    'GML LineString missing coordinates, record '
                         . "{$this->source}." . $this->getID()
                 );
                 $this->storeWarning('gml linestring missing coordinates');
@@ -1042,7 +1123,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                 if (!$coordinates) {
                     $this->logger->logDebug(
                         'Lido',
-                        "Empty pos in GML point, record "
+                        'Empty pos in GML point, record '
                             . "{$this->source}." . $this->getID(),
                         true
                     );
@@ -1058,7 +1139,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                 if (!$coordinates) {
                     $this->logger->logDebug(
                         'Lido',
-                        "Empty coordinates in GML point, record "
+                        'Empty coordinates in GML point, record '
                             . "{$this->source}." . $this->getID(),
                         true
                     );
@@ -1074,7 +1155,7 @@ class Lido extends \RecordManager\Base\Record\Lido
             if (null === $lat || null === $lon) {
                 $this->logger->logDebug(
                     'Lido',
-                    "GML Point does not contain pos or coordinates, record "
+                    'GML Point does not contain pos or coordinates, record '
                         . "{$this->source}." . $this->getID(),
                     true
                 );

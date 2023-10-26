@@ -225,6 +225,8 @@ store_message_level = -1
 ; See https://pear.php.net/manual/en/package.http.http-request2.config.php for
 ; documentation on the valid parameters.
 [HTTP]
+; By default redirects (HTTP status 302) are not followed to avoid silent redirect
+; for each request, but they can be enabled by uncommenting the setting below:
 ;follow_redirects = true
 ;adapter = "HTTP_Request2_Adapter_Curl"
 ;ssl_verify_peer = false
@@ -323,6 +325,10 @@ replace[] = '\1 street'
 ; Solr field that contains centroids for the locations. Set to empty if no suitable
 ; field is available. The field should be a LatLonPointSpatialField.
 ;solr_center_field = center_coords_mv
+; Properties that cause location data of a node to be ignored. The setting key is the
+; property type to check, and value is a list containing all the IDs to ignore.
+;excluded_location_matches[http://www.yso.fi/onto/yso-meta/mmlPlaceType] = "mmlPlaceTypeExclude.lst"
+;excluded_location_matches[http://www.yso.fi/onto/yso-meta/wikidataPlaceType] = "wikidataPlaceTypeExclude.lst"
 ; Allowed languages in enriched data. Default is to allow everything.
 ;languages[] = "en"
 ;languages[] = "fi"

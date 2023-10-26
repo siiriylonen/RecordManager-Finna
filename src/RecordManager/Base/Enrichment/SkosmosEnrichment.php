@@ -5,7 +5,7 @@
  *
  * PHP version 8
  *
- * Copyright (C) The National Library of Finland 2014-2022.
+ * Copyright (C) The National Library of Finland 2014-2023.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2,
@@ -31,6 +31,11 @@
 namespace RecordManager\Base\Enrichment;
 
 use RecordManager\Base\Record\AbstractRecord;
+
+use function call_user_func;
+use function in_array;
+use function is_array;
+use function is_callable;
 
 /**
  * Skosmos Enrichment Class
@@ -120,6 +125,37 @@ class SkosmosEnrichment extends AbstractEnrichment
     protected $enrichmentCache = null;
 
     /**
+     * Default fields to enrich. Key is the method in driver and value is array
+     * - pref, preferred field in solr
+     * - alt, alternative field in solr
+     * - check, check field for existing values
+     *
+     * @var array<string, array>
+     */
+    protected $defaultFields = [
+        'getRawTopicIds' => [
+            'pref' => 'topic_add_txt_mv',
+            'alt' => 'topic_alt_txt_mv',
+            'check' => 'topic',
+        ],
+        'getRawGeographicTopicIds' => [
+            'pref' => 'geographic_add_txt_mv',
+            'alt' => 'geographic_alt_txt_mv',
+            'check' => 'geographic',
+        ],
+    ];
+
+    /**
+     * An associative array of property matches that causes the location data of a
+     * node to be ignored.
+     *
+     * Key is property type and value is an array of property id's.
+     *
+     * @var array
+     */
+    protected $excludedLocationMatches = [];
+
+    /**
      * Initialize settings
      *
      * @return void
@@ -160,6 +196,17 @@ class SkosmosEnrichment extends AbstractEnrichment
         if ($cacheSize = $settings['enrichment_cache_size'] ?? 10000) {
             $this->enrichmentCache = new \cash\LRUCache((int)$cacheSize);
         }
+
+        foreach ((array)($settings['excluded_location_matches'] ?? []) as $type => $file) {
+            $listFile = RECMAN_BASE_PATH . "/conf/$file";
+            $ids = file($listFile, FILE_IGNORE_NEW_LINES);
+            if (false === $ids) {
+                throw new \Exception("Could not read $listFile");
+            }
+            if ($ids) {
+                $this->excludedLocationMatches[$type] = $ids;
+            }
+        }
     }
 
     /**
@@ -174,19 +221,7 @@ class SkosmosEnrichment extends AbstractEnrichment
      */
     public function enrich($sourceId, $record, &$solrArray)
     {
-        $fields = [
-            'getRawTopicIds' => [
-                'pref' => 'topic_add_txt_mv',
-                'alt' => 'topic_alt_txt_mv',
-                'check' => 'topic',
-            ],
-            'getRawGeographicTopicIds' => [
-                'pref' => 'geographic_add_txt_mv',
-                'alt' => 'geographic_alt_txt_mv',
-                'check' => 'geographic',
-            ],
-        ];
-        foreach ($fields as $method => $spec) {
+        foreach ($this->defaultFields as $method => $spec) {
             if (!is_callable([$record, $method])) {
                 continue;
             }
@@ -374,7 +409,7 @@ class SkosmosEnrichment extends AbstractEnrichment
             }
 
             if ($node->getId() === $id) {
-                if ($locs = $this->processLocationWgs84($node)) {
+                if ($locs = $this->processLocationWgs84($node, $recordId)) {
                     $result['locations'] = [
                         ...$result['locations'],
                         ...$locs,
@@ -419,7 +454,7 @@ class SkosmosEnrichment extends AbstractEnrichment
                         continue;
                     }
 
-                    if ($locs = $this->processLocationWgs84($matchNode)) {
+                    if ($locs = $this->processLocationWgs84($matchNode, $recordId)) {
                         $result['locations'] = [
                             ...$result['locations'],
                             ...$locs,
@@ -576,12 +611,13 @@ class SkosmosEnrichment extends AbstractEnrichment
     /**
      * Process WGS 84 location data
      *
-     * @param \ML\JsonLD\Node $node Decoded JSON array item from which to extract
-     *                              location data
+     * @param \ML\JsonLD\Node $node     Decoded JSON array item from which to extract
+     *                                  location data
+     * @param string          $recordId Record ID
      *
      * @return array<int, array>
      */
-    protected function processLocationWgs84(\ML\JsonLD\Node $node): array
+    protected function processLocationWgs84(\ML\JsonLD\Node $node, string $recordId): array
     {
         $result = [];
         $lat = $node->getProperty(self::WGS84_POS . 'lat');
@@ -589,6 +625,26 @@ class SkosmosEnrichment extends AbstractEnrichment
         if ($lat && $lon) {
             $lat = is_array($lat) ? $lat[0]->getValue() : $lat->getValue();
             $lon = is_array($lon) ? $lon[0]->getValue() : $lon->getValue();
+            // Check for excluded types:
+            foreach ($this->excludedLocationMatches as $type => $ids) {
+                if ($props = $node->getProperty($type)) {
+                    foreach (is_array($props) ? $props : [$props] as $prop) {
+                        if (in_array($prop->getId(), $ids)) {
+                            $this->logger->logDebug(
+                                'processLocationWgs84',
+                                "Excluded location $lat,$lon for " . $node->getId() . " ($recordId)",
+                                true
+                            );
+                            return $result;
+                        }
+                    }
+                }
+            }
+            $this->logger->logDebug(
+                'processLocationWgs84',
+                "Included location $lat,$lon for " . $node->getId() . " ($recordId)",
+                true
+            );
             $result[] = [
                 'lat' => $lat,
                 'lon' => $lon,

@@ -39,6 +39,11 @@ use RecordManager\Base\Utils\LcCallNumber;
 use RecordManager\Base\Utils\Logger;
 use RecordManager\Base\Utils\MetadataUtils;
 
+use function boolval;
+use function in_array;
+use function is_array;
+use function strlen;
+
 /**
  * Marc record class
  *
@@ -586,6 +591,15 @@ class Marc extends \RecordManager\Base\Record\Marc
             }
         }
 
+        // Publisher or distributor number
+        foreach ($this->getPublisherNumbers() as $current) {
+            $number = $current['id'];
+            if ('' !== $current['source']) {
+                $number = '(' . $current['source'] . ')' . $number;
+            }
+            $data['pdn_str_mv'][] = $number;
+        }
+
         // Identifiers from component parts (type as a leading string)
         foreach (
             $this->getFieldsSubfields(
@@ -831,6 +845,16 @@ class Marc extends \RecordManager\Base\Record\Marc
             )
         );
 
+        // Additional IDs from repeated 001 (Sierra):
+        $ids = $this->record->getFields('001');
+        array_shift($ids);
+        if ($ids) {
+            $data['ctrlnum'] = [
+                ...($data['ctrlnum'] ?? []),
+                ...$ids,
+            ];
+        }
+
         // Merge any extra fields from e.g. merged component parts (also converts any
         // single-value field to an array):
         foreach ($this->extraFields as $field => $fieldData) {
@@ -860,72 +884,6 @@ class Marc extends \RecordManager\Base\Record\Marc
             }
         }
         return $this->addNamespaceToAuthorityIds($result, 'topic');
-    }
-
-    /**
-     * Get all non-specific topics
-     *
-     * @return array
-     */
-    protected function getTopicIDs(): array
-    {
-        $fieldTags = ['567', '600', '610', '611', '630', '650'];
-        $result = [];
-        foreach ($fieldTags as $tag) {
-            foreach ($this->record->getFields($tag) as $field) {
-                if ($id = $this->getIDFromField($field)) {
-                    $result[] = $id;
-                }
-            }
-        }
-        return $this->addNamespaceToAuthorityIds($result, 'topic');
-    }
-
-    /**
-     * Get identifier from subfield 0. Prefix with source if necessary.
-     *
-     * @param array $field MARC field
-     *
-     * @return string
-     */
-    protected function getIdFromField(array $field): string
-    {
-        if ($id = $this->record->getSubfield($field, '0')) {
-            if (
-                !preg_match('/^https?:/', $id)
-                && ($srcId = $this->getThesaurusId($field))
-            ) {
-                $id = "($srcId)$id";
-            }
-        }
-        return $id;
-    }
-
-    /**
-     * Get thesaurus ID from second indicator or subfield 2
-     *
-     * @param array $field MARC field
-     *
-     * @return string
-     */
-    protected function getThesaurusId(array $field): string
-    {
-        $map = [
-            't0' => 'LCSH',
-            't1' => 'LCCSH',
-            't2' => 'MSH',
-            't3' => 'NAL',
-            't5' => 'CanSH',
-            't6' => 'RVM',
-        ];
-        $ind2 = $this->record->getIndicator($field, 2);
-        if ($src = ($map["t$ind2"] ?? '')) {
-            return $src;
-        }
-        if ('7' === $ind2) {
-            return $this->record->getSubfield($field, '2');
-        }
-        return '';
     }
 
     /**
@@ -1016,7 +974,7 @@ class Marc extends \RecordManager\Base\Record\Marc
             'OAN' => [[MarcHandler::GET_NORMAL, '025', ['a']]],
             'FI' => [[MarcHandler::GET_NORMAL, '026', ['a', 'b']]],
             'STRN' => [[MarcHandler::GET_NORMAL, '027', ['a']]],
-            'PDN' => [[MarcHandler::GET_NORMAL, '028', ['a']]],
+            'PDN' => [[MarcHandler::GET_NORMAL, '028', ['a', 'b']]],
         ];
 
         $identifiers = [];
@@ -1207,6 +1165,168 @@ class Marc extends \RecordManager\Base\Record\Marc
             $this->cachedFormat = $this->getFormatFunc();
         }
         return $this->cachedFormat;
+    }
+
+    /**
+     * Check if record has access restrictions.
+     *
+     * @return string 'restricted' or more specific licence id if restricted,
+     * empty string otherwise
+     */
+    public function getAccessRestrictions()
+    {
+        if ($result = parent::getAccessRestrictions()) {
+            return $result;
+        }
+        // Access restrictions based on location
+        $restricted = $this->getDriverParam('restrictedLocations', '');
+        if ($restricted) {
+            $restricted = array_flip(
+                array_map(
+                    'trim',
+                    explode(',', $restricted)
+                )
+            );
+        }
+        if ($restricted) {
+            foreach ($this->record->getFields('852') as $field852) {
+                $locationCode = trim($this->record->getSubfield($field852, 'b'));
+                if (isset($restricted[$locationCode])) {
+                    return 'restricted';
+                }
+            }
+            foreach ($this->record->getFields('952') as $field952) {
+                $locationCode = trim($this->record->getSubfield($field952, 'b'));
+                if (isset($restricted[$locationCode])) {
+                    return 'restricted';
+                }
+            }
+        }
+        foreach ($this->record->getFields('540') as $field) {
+            $sub3 = $this->metadataUtils->stripTrailingPunctuation(
+                $this->record->getSubfield($field, '3')
+            );
+            if ($sub3 == 'Metadata' || strncasecmp($sub3, 'metadata', 8) == 0) {
+                $subA = $this->metadataUtils->stripTrailingPunctuation(
+                    $this->record->getSubfield($field, 'a')
+                );
+                if (strncasecmp($subA, 'ei poimintaa', 12) == 0) {
+                    return 'restricted';
+                }
+            }
+        }
+        return '';
+    }
+
+    /**
+     * Check if the record is suppressed.
+     *
+     * @return bool
+     */
+    public function getSuppressed()
+    {
+        if (parent::getSuppressed()) {
+            return true;
+        }
+        if ($this->getDriverParam('kohaNormalization', false)) {
+            foreach ($this->record->getFields('942') as $field942) {
+                $suppressed = $this->record->getSubfield($field942, 'n');
+                return (bool)$suppressed;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Dedup: Return unique IDs (control numbers)
+     *
+     * @return array
+     */
+    public function getUniqueIDs()
+    {
+        if (isset($this->resultCache[__METHOD__])) {
+            return $this->resultCache[__METHOD__];
+        }
+        $result = parent::getUniqueIDs();
+        // Melinda ID
+        foreach ($this->record->getFields('035') as $field) {
+            $id = $this->record->getSubfield($field, 'a');
+            if (str_starts_with($id, 'FCC')) {
+                $idNumber = substr($id, 3);
+                if (ctype_digit($idNumber)) {
+                    $result[] = "(FI-MELINDA)$idNumber";
+                    break;
+                }
+            }
+        }
+        $this->resultCache[__METHOD__] = $result;
+        return $result;
+    }
+
+    /**
+     * Get all non-specific topics
+     *
+     * @return array
+     */
+    protected function getTopicIDs(): array
+    {
+        $fieldTags = ['567', '600', '610', '611', '630', '650'];
+        $result = [];
+        foreach ($fieldTags as $tag) {
+            foreach ($this->record->getFields($tag) as $field) {
+                if ($id = $this->getIDFromField($field)) {
+                    $result[] = $id;
+                }
+            }
+        }
+        return $this->addNamespaceToAuthorityIds($result, 'topic');
+    }
+
+    /**
+     * Get identifier from subfield 0. Prefix with source if necessary.
+     *
+     * @param array $field MARC field
+     *
+     * @return string
+     */
+    protected function getIdFromField(array $field): string
+    {
+        if ($id = $this->record->getSubfield($field, '0')) {
+            if (
+                !preg_match('/^https?:/', $id)
+                && ($srcId = $this->getThesaurusId($field))
+            ) {
+                $id = "($srcId)$id";
+            }
+        }
+        return $id;
+    }
+
+    /**
+     * Get thesaurus ID from second indicator or subfield 2
+     *
+     * @param array $field MARC field
+     *
+     * @return string
+     */
+    protected function getThesaurusId(array $field): string
+    {
+        $map = [
+            't0' => 'LCSH',
+            't1' => 'LCCSH',
+            't2' => 'MSH',
+            't3' => 'NAL',
+            't5' => 'CanSH',
+            't6' => 'RVM',
+        ];
+        $ind2 = $this->record->getIndicator($field, 2);
+        if ($src = ($map["t$ind2"] ?? '')) {
+            return $src;
+        }
+        if ('7' === $ind2) {
+            return $this->record->getSubfield($field, '2');
+        }
+        return '';
     }
 
     /**
@@ -1605,76 +1725,6 @@ class Marc extends \RecordManager\Base\Record\Marc
                 return 'ContinuouslyUpdatedResource';
         }
         return 'Other';
-    }
-
-    /**
-     * Check if record has access restrictions.
-     *
-     * @return string 'restricted' or more specific licence id if restricted,
-     * empty string otherwise
-     */
-    public function getAccessRestrictions()
-    {
-        if ($result = parent::getAccessRestrictions()) {
-            return $result;
-        }
-        // Access restrictions based on location
-        $restricted = $this->getDriverParam('restrictedLocations', '');
-        if ($restricted) {
-            $restricted = array_flip(
-                array_map(
-                    'trim',
-                    explode(',', $restricted)
-                )
-            );
-        }
-        if ($restricted) {
-            foreach ($this->record->getFields('852') as $field852) {
-                $locationCode = trim($this->record->getSubfield($field852, 'b'));
-                if (isset($restricted[$locationCode])) {
-                    return 'restricted';
-                }
-            }
-            foreach ($this->record->getFields('952') as $field952) {
-                $locationCode = trim($this->record->getSubfield($field952, 'b'));
-                if (isset($restricted[$locationCode])) {
-                    return 'restricted';
-                }
-            }
-        }
-        foreach ($this->record->getFields('540') as $field) {
-            $sub3 = $this->metadataUtils->stripTrailingPunctuation(
-                $this->record->getSubfield($field, '3')
-            );
-            if ($sub3 == 'Metadata' || strncasecmp($sub3, 'metadata', 8) == 0) {
-                $subA = $this->metadataUtils->stripTrailingPunctuation(
-                    $this->record->getSubfield($field, 'a')
-                );
-                if (strncasecmp($subA, 'ei poimintaa', 12) == 0) {
-                    return 'restricted';
-                }
-            }
-        }
-        return '';
-    }
-
-    /**
-     * Check if the record is suppressed.
-     *
-     * @return bool
-     */
-    public function getSuppressed()
-    {
-        if (parent::getSuppressed()) {
-            return true;
-        }
-        if ($this->getDriverParam('kohaNormalization', false)) {
-            foreach ($this->record->getFields('942') as $field942) {
-                $suppressed = $this->record->getSubfield($field942, 'n');
-                return (bool)$suppressed;
-            }
-        }
-        return false;
     }
 
     /**
@@ -2428,32 +2478,6 @@ class Marc extends \RecordManager\Base\Record\Marc
             [],
             ['110', '111', '710', '711']
         );
-    }
-
-    /**
-     * Dedup: Return unique IDs (control numbers)
-     *
-     * @return array
-     */
-    public function getUniqueIDs()
-    {
-        if (isset($this->resultCache[__METHOD__])) {
-            return $this->resultCache[__METHOD__];
-        }
-        $result = parent::getUniqueIDs();
-        // Melinda ID
-        foreach ($this->record->getFields('035') as $field) {
-            $id = $this->record->getSubfield($field, 'a');
-            if (str_starts_with($id, 'FCC')) {
-                $idNumber = substr($id, 3);
-                if (ctype_digit($idNumber)) {
-                    $result[] = "(FI-MELINDA)$idNumber";
-                    break;
-                }
-            }
-        }
-        $this->resultCache[__METHOD__] = $result;
-        return $result;
     }
 
     /**

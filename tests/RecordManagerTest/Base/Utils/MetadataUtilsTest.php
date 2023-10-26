@@ -32,6 +32,9 @@ namespace RecordManagerTest\Base\Utils;
 use RecordManager\Base\Utils\Logger;
 use RecordManager\Base\Utils\MetadataUtils;
 
+use function ini_get;
+use function is_string;
+
 /**
  * MetadataUtils tests
  *
@@ -306,7 +309,7 @@ class MetadataUtilsTest extends \PHPUnit\Framework\TestCase
 
         // Test by rounding to lowest precision for PHP 8 compatibility
         // (see https://github.com/php/php-src/blob/PHP-8.0/UPGRADING#L584#L587):
-        $precision = min(ini_get('precision'), ini_get('serialize_precision')) ?: 15;
+        $precision = (int)(min(ini_get('precision'), ini_get('serialize_precision')) ?: 15);
         foreach ($values as $from => $to) {
             $this->assertEquals(
                 is_string($to) ? $to : round($to, $precision),
