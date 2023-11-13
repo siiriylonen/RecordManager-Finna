@@ -159,16 +159,22 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTestBase
             'geographic_facet' => [
                 'Ruokolahti',
                 'Imatrankoski, Ruokolahti',
-                'Location, Location, Location',
+                'Repository Location 1',
+                'Repository Location 2',
                 'Imatrankoski',
                 'Ruokolahti',
             ],
             'geographic' => [
                 'Ruokolahti',
                 'Imatrankoski, Ruokolahti',
-                'Location, Location, Location',
+                'Repository Location 1',
+                'Repository Location 2',
             ],
-            'geographic_id_str_mv' => [],
+            'geographic_id_str_mv' => [
+                '(prt)Prt',
+                '(kiinteistötunnus)Kiinteistötunnus',
+                '(URI)Uri and Yso',
+            ],
             'collection' => 'Kansatieteen kuvakokoelma',
             'thumbnail' => 'http://muisti.nba.fi/m/4878_1/00013199.jpg',
             'allfields' => [
@@ -187,7 +193,11 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTestBase
                 '33,1. Imatra.',
                 'Museoviraston kuva-arkisto/',
                 '4878:1',
-                'Location, Location, Location',
+                'Repository Location 1',
+                'Repository Location 2',
+                'Prt',
+                'Kiinteistötunnus',
+                'Uri and Yso',
                 'valmistus',
                 'Hintze Harry',
                 '1897',
@@ -278,6 +288,9 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTestBase
             ],
             'identifier_txtP_mv' => [
                 '4878:1',
+                'Prt',
+                'Kiinteistötunnus',
+                'Uri and Yso',
             ],
         ];
 

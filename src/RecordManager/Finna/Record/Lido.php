@@ -115,6 +115,13 @@ class Lido extends \RecordManager\Base\Record\Lido
     protected $descriptionTypesExcludedFromTitle = ['provenance', 'provenienssi'];
 
     /**
+     * Location labels which should be included when getting location information.
+     *
+     * @var array
+     */
+    protected $includedLocationLabels = ['prt', 'kiinteistötunnus'];
+
+    /**
      * Location labels which should be excluded when getting location information.
      *
      * @var array
@@ -493,9 +500,8 @@ class Lido extends \RecordManager\Base\Record\Lido
             ?? [] as $set
         ) {
             foreach ($set->repositoryLocation->placeID ?? [] as $placeID) {
-                $types = ['prt', 'kiinteistötunnus'];
                 $attr = $placeID->attributes();
-                if (in_array($attr->type, $types)) {
+                if (in_array($attr->type, $this->includedLocationLabels)) {
                     $result[] = $placeID;
                 }
                 if ($attr->type == 'URI' && $attr->source == 'YSO') {
