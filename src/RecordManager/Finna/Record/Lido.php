@@ -309,6 +309,7 @@ class Lido extends \RecordManager\Base\Record\Lido
                 array_column($onlineUrls, 'mediaType')
             )
         );
+        $data['identifier_txtP_mv'] = $this->getOtherIdentifiers();
         return $data;
     }
 
@@ -441,46 +442,64 @@ class Lido extends \RecordManager\Base\Record\Lido
     public function getRawGeographicTopicIds(): array
     {
         $result = [];
-
-        $getPlaceID = function ($placeID) {
+        foreach ($this->getPlaceIDElements() as $placeID) {
             $id = trim((string)$placeID);
             if (
                 !preg_match('/^https?:/', $id)
                 && $type = (string)($placeID['type'] ?? '')
             ) {
-                $id = "($type)$id";
+                $result[] = "($type)$id";
             }
-            return $id;
-        };
+        }
+        return $result;
+    }
 
-        foreach ($this->getEventNodes($this->getPlaceEvents()) as $eventNode) {
+    /**
+     * Get all the placeID elements
+     *
+     * @param bool $allEvents Return all events for event places
+     *
+     * @return array
+     */
+    protected function getPlaceIDElements(bool $allEvents = false): array
+    {
+        $result = [];
+        foreach ($this->getEventNodes($allEvents ? null : $this->getPlaceEvents()) as $eventNode) {
             foreach ($eventNode->eventPlace as $eventPlace) {
-                if (isset($eventPlace->place->placeID)) {
-                    $result[] = $getPlaceID($eventPlace->place->placeID);
+                foreach ($eventPlace->place->placeID ?? [] as $placeID) {
+                    $result[] = $placeID;
                 }
             }
         }
-
         foreach ($this->getSubjectNodes() as $subject) {
             foreach ($subject->subjectPlace as $subjectPlace) {
-                if (isset($subjectPlace->place->placeID)) {
-                    $result[] = $getPlaceID($subjectPlace->place->placeID);
+                foreach ($subjectPlace->place->placeID ?? [] as $placeID) {
+                    $result[] = $placeID;
                 }
             }
         }
-
+        if ($allEvents) {
+            foreach (
+                $this->doc->lido->descriptiveMetadata->objectIdentificationWrap->repositoryWrap->repositorySet
+                ?? [] as $set
+            ) {
+                foreach ($set->repositoryLocation->placeID ?? [] as $placeID) {
+                    $result[] = $placeID;
+                }
+            }
+        }
         foreach (
             $this->doc->lido->descriptiveMetadata->objectIdentificationWrap->repositoryWrap->repositorySet
             ?? [] as $set
         ) {
-            foreach ($set->repositoryLocation->placeID ?? [] as $place) {
+            foreach ($set->repositoryLocation->placeID ?? [] as $placeID) {
                 $types = ['prt', 'kiinteistötunnus'];
-                $attr = $place->attributes();
+                $attr = $placeID->attributes();
                 if (in_array($attr->type, $types)) {
-                    $result[] = $getPlaceID($place);
+                    $result[] = $placeID;
                 }
                 if ($attr->type == 'URI' && $attr->source == 'YSO') {
-                    $result[] = $getPlaceID($place);
+                    $result[] = $placeID;
                 }
             }
         }
@@ -2048,5 +2067,27 @@ class Lido extends \RecordManager\Base\Record\Lido
             }
         }
         return $results;
+    }
+
+    /**
+     * Get other identifiers except ISBN, ISSN and identifiers which are URLs.
+     * Contains: workIDs, placeIDs.
+     *
+     * @see    https://lido-schema.org/schema/v1.1/lido-v1.1.html#placeID
+     * @see    https://lido-schema.org/schema/v1.1/lido-v1.1.html#workID
+     * @return array
+     */
+    protected function getOtherIdentifiers(): array
+    {
+        $filterUrls = function ($el) {
+            $trimmed = trim((string)$el);
+            return !preg_match('/^https?:/', $el) ? $trimmed : '';
+        };
+        $identifiers = $this->getIdentifiersByType([], ['issn', 'isbn']);
+        $result = array_merge(
+            array_map($filterUrls, $identifiers),
+            array_map($filterUrls, $this->getPlaceIDElements(true)),
+        );
+        return array_values(array_filter(array_unique($result)));
     }
 }
