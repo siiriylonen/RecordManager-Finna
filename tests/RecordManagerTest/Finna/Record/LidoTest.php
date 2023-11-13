@@ -207,6 +207,7 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTestBase
                 '4878:1',
                 'Museovirasto/MV',
                 'Museovirasto/MV',
+                'Kansatieteen kuvakokoelma',
                 'Museovirasto/MV',
             ],
             'identifier' => '4878:1',
