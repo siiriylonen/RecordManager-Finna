@@ -483,6 +483,10 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTestBase
             '[1918-01-01 TO 1931-12-31]',
             $fields['search_daterange_mv']
         );
+        $this->assertContains(
+            '[1917-01-01 TO 1917-12-31]',
+            $fields['search_daterange_mv']
+        );
         $this->assertEquals(
             ['Testiperhe', 'Tellervo Testihenkilö'],
             $fields['author']
