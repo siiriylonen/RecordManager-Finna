@@ -477,6 +477,7 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTestBase
     public function testYksa()
     {
         // <unitdate>1918-1931</unitdate>
+        // 1917-XX-XX
         $fields = $this->createRecord(Ead3::class, 'yksa.xml', [], 'Finna')
             ->toSolrArray();
         $this->assertContains(
