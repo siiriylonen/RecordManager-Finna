@@ -919,19 +919,16 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                 }
                 $normal = (string)$unitdate->attributes()->normal;
                 if (!empty($normal)) {
-                    $result[] = $parsedDate = $this->parseDateRange($normal);
-                    if (!$parsedDate) {
+                    $parsedDate = $this->parseDateRange($normal);
+                    if ($parsedDate) {
+                        $result[] = $parsedDate;
+                    } else {
                         $normal = strtolower($normal);
                         if (
-                            !str_contains($normal, 'xxxx')
-                            || !str_contains($normal, 'uuuu')
+                            (!str_contains($normal, 'xxxx') && !str_contains($normal, 'uuuu'))
+                            && (str_contains($normal, '-xx-xx') || str_contains($normal, '-uu-uu'))
                         ) {
-                            if (
-                                str_contains($normal, '-xx-xx')
-                                || str_contains($normal, '-uu-uu')
-                            ) {
-                                $result[] = $this->parseDateRange("$normal/$normal");
-                            }
+                            $result[] = $this->parseDateRange("$normal/$normal");
                         }
                     }
                 } else {
