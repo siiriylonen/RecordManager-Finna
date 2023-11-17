@@ -925,7 +925,7 @@ class Ead3 extends \RecordManager\Base\Record\Ead3
                     } else {
                         $normal = strtolower($normal);
                         if (
-                            (!str_contains($normal, 'xxxx') && !str_contains($normal, 'uuuu'))
+                            !str_contains($normal, 'xxxx') && !str_contains($normal, 'uuuu')
                             && (str_contains($normal, '-xx-xx') || str_contains($normal, '-uu-uu'))
                         ) {
                             $result[] = $this->parseDateRange("$normal/$normal");
