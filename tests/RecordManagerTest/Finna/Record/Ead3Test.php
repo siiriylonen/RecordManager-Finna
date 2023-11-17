@@ -477,10 +477,12 @@ class Ead3Test extends \RecordManagerTest\Base\Record\RecordTestBase
     public function testYksa()
     {
         // <unitdate>1918-1931</unitdate>
+        // 1917-XX-XX
+        // uuuu-uu-uu (not to be included)
         $fields = $this->createRecord(Ead3::class, 'yksa.xml', [], 'Finna')
             ->toSolrArray();
-        $this->assertContains(
-            '[1918-01-01 TO 1931-12-31]',
+        $this->assertEquals(
+            ['[1918-01-01 TO 1931-12-31]', '[1917-01-01 TO 1917-12-31]'],
             $fields['search_daterange_mv']
         );
         $this->assertEquals(
