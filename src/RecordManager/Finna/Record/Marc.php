@@ -153,6 +153,21 @@ class Marc extends \RecordManager\Base\Record\Marc
     ];
 
     /**
+     * Field specs for ISSN fields
+     *
+     * 'type' can be 'normal', 'combined' or 'invalid'; it's not currently used but
+     * exists for future needs and compatibility with $isbnFields.
+     *
+     * @var array
+     */
+    protected $issnFields = [
+        [
+            'type' => 'normal',
+            'selector' => [[MarcHandler::GET_NORMAL, '022', ['a']]],
+        ],
+    ];
+
+    /**
      * Constructor
      *
      * @param array               $config              Main configuration
@@ -478,16 +493,15 @@ class Marc extends \RecordManager\Base\Record\Marc
         $data['source_str_mv'] = $this->source;
         $data['datasource_str_mv'] = [$this->source];
 
-        // ISSN
-        $data['issn'] = $this->getFieldsSubfields(
-            [[MarcHandler::GET_NORMAL, '022', ['a']]]
-        );
+        // ISSN processing
         foreach ($data['issn'] as &$value) {
             $value = str_replace('-', '', $value);
         }
+        unset($value);
         $data['other_issn_isn_mv'] = $data['other_issn_str_mv']
             = $this->getFieldsSubfields(
                 [
+                    [MarcHandler::GET_NORMAL, '022', ['y']],
                     [MarcHandler::GET_NORMAL, '440', ['x']],
                     [MarcHandler::GET_NORMAL, '480', ['x']],
                     [MarcHandler::GET_NORMAL, '490', ['x']],
@@ -499,12 +513,14 @@ class Marc extends \RecordManager\Base\Record\Marc
         foreach ($data['other_issn_str_mv'] as &$value) {
             $value = str_replace('-', '', $value);
         }
+        unset($value);
         $data['linking_issn_str_mv'] = $this->getFieldsSubfields(
             [[MarcHandler::GET_NORMAL, '022', ['l']]]
         );
         foreach ($data['linking_issn_str_mv'] as &$value) {
             $value = str_replace('-', '', $value);
         }
+        unset($value);
 
         // URLs
         $onlineUrls = $this->getLinkData();
