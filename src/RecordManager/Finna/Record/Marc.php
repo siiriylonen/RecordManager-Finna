@@ -421,7 +421,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                 && (!isset($data['major_genre_str_mv'])
                 || $data['major_genre_str_mv'] == 'nonfiction')
             ) {
-                switch (substr($classification, 0, 2)) {
+                switch (substr(ltrim($classification, 'L'), 0, 2)) {
                     case '78':
                         $data['major_genre_str_mv'] = 'music';
                         break;
