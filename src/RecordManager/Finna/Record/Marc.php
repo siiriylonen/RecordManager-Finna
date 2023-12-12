@@ -1344,7 +1344,7 @@ class Marc extends \RecordManager\Base\Record\Marc
      */
     protected function getTopicIDs(): array
     {
-        $fieldTags = ['567', '600', '610', '611', '630', '650'];
+        $fieldTags = ['567', '600', '610', '611', '630', '650', '690'];
         $result = [];
         foreach ($fieldTags as $tag) {
             foreach ($this->record->getFields($tag) as $field) {
@@ -2112,6 +2112,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                 'y', 'z', '2', '6', '8',
             ],
             '650' => ['0', '2', '6', '8'],
+            '690' => ['0', '2', '6', '8'],
             '100' => ['0', '4'],
             '700' => ['0', '4'],
             '710' => ['0', '4'],
@@ -2372,6 +2373,7 @@ class Marc extends \RecordManager\Base\Record\Marc
                 [MarcHandler::GET_NORMAL, '650', ['a', 'x']],
                 [MarcHandler::GET_NORMAL, '651', ['x']],
                 [MarcHandler::GET_NORMAL, '655', ['x']],
+                [MarcHandler::GET_NORMAL, '690', ['a', 'x']],
                 [MarcHandler::GET_NORMAL, '385', ['a']],
                 [MarcHandler::GET_NORMAL, '386', ['a']],
             ],
@@ -2401,6 +2403,9 @@ class Marc extends \RecordManager\Base\Record\Marc
                     [MarcHandler::GET_NORMAL, '385', ['a']],
                     [MarcHandler::GET_NORMAL, '356', ['a']],
                     [MarcHandler::GET_NORMAL, '567', ['b']],
+                    [MarcHandler::GET_BOTH, '690', [
+                        'a', 'b', 'c', 'd', 'e', 'v', 'x', 'y', 'z',
+                    ]],
                 ]
             ),
         ];
