@@ -245,6 +245,9 @@ class Marc extends \RecordManager\Base\Record\Marc
     {
         $data = parent::toSolrArray($db);
 
+        $leader = $this->record->getLeader();
+        $field008 = $this->record->getControlField('008');
+
         if (empty($data['author'])) {
             foreach ($this->record->getFields('110') as $field110) {
                 $author = $this->record->getSubfield($field110, 'a');
@@ -345,6 +348,19 @@ class Marc extends \RecordManager\Base\Record\Marc
                 ...$data['author2_id_str_mv'],
                 ...$this->addNamespaceToAuthorityIds($ids, 'author'),
             ];
+        }
+
+        // Major genre from 008
+        if (
+            in_array(substr($leader, 6, 1), ['a', 't'])
+            && !in_array(substr($leader, 7, 1), ['b', 'i', 's'])
+        ) {
+            $genre = substr($field008, 33, 1);
+            if ('0' === $genre) {
+                $data['major_genre_str_mv'] = 'nonfiction';
+            } elseif (in_array($genre, ['1', 'd', 'f', 'h', 'j', 'p'], true)) {
+                $data['major_genre_str_mv'] = 'fiction';
+            }
         }
 
         // Classifications
@@ -821,10 +837,10 @@ class Marc extends \RecordManager\Base\Record\Marc
                 }
             }
         } elseif ('Dissertation' === $data['format']) {
-            if ('m' === substr($this->record->getLeader(), 7, 1)) {
+            if ('m' === substr($leader, 7, 1)) {
                 $data['format_ext_str_mv'] = (array)$data['format'];
                 if (
-                    'o' === substr($this->record->getControlField('008'), 23, 1)
+                    'o' === substr($field008, 23, 1)
                     || 'cr' === substr($this->record->getControlField('007'), 0, 2)
                 ) {
                     $data['format_ext_str_mv'][] = 'eBook';
