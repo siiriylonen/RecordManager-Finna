@@ -902,6 +902,28 @@ class Marc extends \RecordManager\Base\Record\Marc
             ];
         }
 
+        // Order and item count summary:
+        foreach ($this->record->getFields('852') as $field) {
+            $type = $this->record->getSubfield($field, '9');
+            if (!$type) {
+                continue;
+            }
+            $count = (int)$this->record->getSubfield($field, 't');
+            if ('orders' === $type) {
+                $data['orders_int'] = $count;
+            } elseif ('items' === $type) {
+                $data['items_int'] = $count;
+            }
+        }
+        foreach ($this->record->getFields('952') as $field) {
+            $status = (int)$this->record->getSubfield($field, '7');
+            if (-1 === $status) {
+                $data['orders_int'] = ($data['orders_int'] ?? 0) + 1;
+            } else {
+                $data['items_int'] = ($data['items_int'] ?? 0) + 1;
+            }
+        }
+
         // Merge any extra fields from e.g. merged component parts (also converts any
         // single-value field to an array):
         foreach ($this->extraFields as $field => $fieldData) {
@@ -2797,6 +2819,40 @@ class Marc extends \RecordManager\Base\Record\Marc
             ];
         }
 
+        return $result;
+    }
+
+    /**
+     * Serialize full record to a string
+     *
+     * @return string
+     */
+    protected function getFullRecord(): string
+    {
+        $record = clone $this->record;
+        // Filter out any order or item count summary fields:
+        $record->filterFields(
+            function ($field) {
+                if ('852' !== (string)key($field)) {
+                    return true;
+                }
+                $field = current($field);
+                foreach ($field['subfields'] ?? [] as $subfield) {
+                    if ('9' === (string)key($subfield) && in_array(current($subfield), ['items', 'orders'])) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        );
+
+        $format = $this->config['MarcRecord']['solr_serialization'] ?? 'JSON';
+        $result = $record->toFormat($format);
+        if (!$result && 'ISO2709' === $format) {
+            // If the record exceeds 99999 bytes, it doesn't fit into ISO 2709, so
+            // use MARCXML as a fallback:
+            $result = $this->record->toFormat('MARCXML');
+        }
         return $result;
     }
 }
