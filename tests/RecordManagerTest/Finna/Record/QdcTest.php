@@ -138,6 +138,9 @@ class QdcTest extends \RecordManagerTest\Base\Record\RecordTestBase
                 'unhandled language verylonglanguagehere',
                 'unhandled language EnGb',
                 'unhandled language caT',
+                'unhandled language po,tt',
+                'unhandled language ,',
+                'unhandled language EMPTY_VALUE',
             ],
             $record->getProcessingWarnings(),
             'getProcessingWarnings'
@@ -145,6 +148,10 @@ class QdcTest extends \RecordManagerTest\Base\Record\RecordTestBase
         $this->compareArray(
             [
                 'fi',
+                'jp',
+                'sv',
+                'en',
+                'nr',
             ],
             $fields['language'],
             'LanguageCheckAfterWarnings'
