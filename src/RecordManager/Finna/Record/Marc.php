@@ -1391,14 +1391,14 @@ class Marc extends \RecordManager\Base\Record\Marc
         if ($id = $this->record->getSubfield($field, '0')) {
             if (
                 !preg_match('/^https?:/', $id)
-                && ($srcId = $this->getThesaurusId($field))
             ) {
-                // Do not prepend source in front of authority ids
+                // Do not prepend source in front of known authority ids (i.e. already prefixed)
                 $regex = $this->getAuthorityIdRegex($type);
                 if ($regex && preg_match($regex, $id)) {
                     return $id;
+                } elseif ($srcId = $this->getThesaurusId($field)) {
+                    return "($srcId)$id";
                 }
-                return "($srcId)$id";
             }
         }
         return $id;
