@@ -1396,7 +1396,8 @@ class Marc extends \RecordManager\Base\Record\Marc
                 $regex = $this->getAuthorityIdRegex($type);
                 if ($regex && preg_match($regex, $id)) {
                     return $id;
-                } elseif ($srcId = $this->getThesaurusId($field)) {
+                }
+                if ($srcId = $this->getThesaurusId($field)) {
                     return "($srcId)$id";
                 }
             }
