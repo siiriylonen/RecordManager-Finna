@@ -69,6 +69,12 @@
                     </repositorySet>
                     <repositorySet>
                         <repositoryLocation>
+                            <namePlaceSet>
+                                <appellationValue>Repository Location 1</appellationValue>
+                            </namePlaceSet>
+                            <namePlaceSet>
+                                <appellationValue>Repository Location 2</appellationValue>
+                            </namePlaceSet>
                             <placeID type="prt" source="YSO">Prt</placeID>
                             <placeID type="kiinteist&#xF6;tunnus" source="Kiinteist&#xF6;rekisteri">Kiinteistötunnus</placeID>
                             <placeID type="URI" source="YSO">http://www.yso.fi/onto/yso/p94413</placeID>

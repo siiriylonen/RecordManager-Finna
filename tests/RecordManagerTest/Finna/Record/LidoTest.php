@@ -196,6 +196,8 @@ class LidoTest extends \RecordManagerTest\Base\Record\RecordTestBase
                 '33,1. Imatra.',
                 'Museoviraston kuva-arkisto/',
                 '4878:1',
+                'Repository Location 1',
+                'Repository Location 2',
                 'Prt',
                 'Kiinteistötunnus',
                 'http://www.yso.fi/onto/yso/p94413',
