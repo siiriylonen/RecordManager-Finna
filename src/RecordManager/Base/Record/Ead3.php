@@ -554,6 +554,8 @@ class Ead3 extends Ead
             $data['is_hierarchy_title'] = $data['hierarchy_top_title']
                 = (string)($this->doc->did->unittitle ?? '');
         }
+
+        // We only need title_in_hierarchy if it differs from title:
         $sequenceUnitId = $sequenceUnitId ?: $firstId;
         if (
             $sequenceUnitId
