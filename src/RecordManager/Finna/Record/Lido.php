@@ -2114,13 +2114,13 @@ class Lido extends \RecordManager\Base\Record\Lido
                 }
                 $result = [
                     'url' => trim($node->linkResource),
-                    'desc' => trim($set->resourceDescription),
+                    'desc' => trim($set->resourceDescription ?? ''),
                     'source' => $this->source,
                 ];
                 $mediaType = $this->getLinkMediaType(
                     trim($node->linkResource),
-                    trim($node->linkResource->attributes()->formatResource),
-                    trim($node->attributes()->type)
+                    trim($node->linkResource->attributes()->formatResource ?? ''),
+                    trim($node->attributes()->type ?? '')
                 );
                 if ($mediaType) {
                     $result['mediaType'] = $mediaType;
