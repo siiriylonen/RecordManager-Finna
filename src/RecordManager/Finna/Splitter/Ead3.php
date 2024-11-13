@@ -49,6 +49,28 @@ use function in_array;
 class Ead3 extends \RecordManager\Base\Splitter\Ead3
 {
     /**
+     * Terms determing archive type is collection
+     *
+     * @var array
+     */
+    protected $collectionTerms = [
+        'collection', 'kokoelma', 'samling',
+    ];
+
+    /**
+     * Set metadata
+     *
+     * @param string $data EAD XML
+     *
+     * @return void
+     */
+    public function setData($data): void
+    {
+        parent::setData($data);
+        $this->archiveType = $this->getArchiveType();
+    }
+
+    /**
      * Get archive title
      *
      * @return string
@@ -95,5 +117,22 @@ class Ead3 extends \RecordManager\Base\Splitter\Ead3
         }
 
         return $pid;
+    }
+
+    /**
+     * Get the archive type
+     *
+     * @return string
+     */
+    protected function getArchiveType(): string
+    {
+        $type = 'archive';
+        foreach ($this->doc->archdesc->controlaccess->genreform->part ?? [] as $part) {
+            if (in_array(strtolower((string)$part), $this->collectionTerms)) {
+                $type = 'collection';
+                break;
+            }
+        }
+        return $type;
     }
 }
