@@ -58,6 +58,13 @@ class Ead3 extends \RecordManager\Base\Splitter\Ead3
     ];
 
     /**
+     * Archive type
+     *
+     * @var string
+     */
+    protected $archiveType;
+
+    /**
      * Set metadata
      *
      * @param string $data EAD XML
@@ -126,13 +133,26 @@ class Ead3 extends \RecordManager\Base\Splitter\Ead3
      */
     protected function getArchiveType(): string
     {
-        $type = 'archive';
         foreach ($this->doc->archdesc->controlaccess->genreform->part ?? [] as $part) {
             if (in_array(strtolower((string)$part), $this->collectionTerms)) {
-                $type = 'collection';
-                break;
+                return 'collection';
             }
         }
-        return $type;
+        return 'archive';
+    }
+
+    /**
+     * Add and form additional data to record
+     *
+     * @param \SimpleXMLElement $record   The record
+     * @param \SimpleXMLElement $original The original record
+     *
+     * @return \SimpleXMLElement
+     */
+    protected function addAdditionalData($record, $original): \SimpleXMLElement
+    {
+        $addData = parent::addAdditionalData($record, $original);
+        $addData->archive->addAttribute('type', $this->archiveType);
+        return $addData;
     }
 }
