@@ -147,12 +147,11 @@ class Ead3 extends \RecordManager\Base\Splitter\Ead3
      * @param \SimpleXMLElement $record   The record
      * @param \SimpleXMLElement $original The original record
      *
-     * @return \SimpleXMLElement
+     * @return void
      */
-    protected function addAdditionalData($record, $original): \SimpleXMLElement
+    protected function addAdditionalData(&$record, $original): void
     {
-        $addData = parent::addAdditionalData($record, $original);
-        $addData->archive->addAttribute('type', $this->archiveType);
-        return $addData;
+        parent::addAdditionalData($record, $original);
+        $record->{'add-data'}->archive->addAttribute('type', $this->archiveType);
     }
 }
