@@ -149,7 +149,7 @@ class Ead3 extends \RecordManager\Base\Splitter\Ead3
      *
      * @return void
      */
-    protected function addAdditionalData(&$record, $original): void
+    protected function addAdditionalData(&$record, &$original): void
     {
         parent::addAdditionalData($record, $original);
         $record->{'add-data'}->archive->addAttribute('type', $this->archiveType);
