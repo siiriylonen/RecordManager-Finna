@@ -49,7 +49,7 @@ use function in_array;
 class Ead3 extends \RecordManager\Base\Splitter\Ead3
 {
     /**
-     * Terms determing archive type is collection
+     * Terms determining that archive type is collection
      *
      * @var array
      */
@@ -62,7 +62,7 @@ class Ead3 extends \RecordManager\Base\Splitter\Ead3
      *
      * @var string
      */
-    protected $archiveType;
+    protected $archiveType = 'archive';
 
     /**
      * Set metadata
